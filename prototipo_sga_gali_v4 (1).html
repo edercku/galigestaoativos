@@ -809,21 +809,27 @@ let selectedRows = new Set();
 
 // ── Dados de ativos (expandido) ──
 const ativos=[
-  {tag:'TI-001',nome:'Servidor Dell PowerEdge R750',cat:'TI',loc:'Matriz — Bauru',status:'Ativo',resp:'João M.',serie:'SN-DEL00112',fab:'Dell',garantia:'12/2027',valor:'R$ 48.000'},
-  {tag:'TI-002',nome:'Switch Cisco Catalyst 2960',cat:'TI',loc:'Matriz — Bauru',status:'Ativo',resp:'João M.',serie:'FOC2248X1AB',fab:'Cisco',garantia:'06/2026',valor:'R$ 8.500'},
-  {tag:'TI-003',nome:'Notebook Dell Latitude 5540',cat:'TI',loc:'Pós Venda',status:'Inativo',resp:'Fátima O.',serie:'SN-NBTK047',fab:'Dell',garantia:'—',valor:'R$ 4.200'},
-  {tag:'TI-004',nome:'Storage NetApp AFF A250',cat:'TI',loc:'Matriz — Bauru',status:'Ativo',resp:'João M.',serie:'NTA2250-09',fab:'NetApp',garantia:'03/2028',valor:'R$ 120.000'},
-  {tag:'IND-023',nome:'Compressor Atlas Copco GA22',cat:'Industrial',loc:'TK4 CEMIG',status:'Em manutenção',resp:'Paulo R.',serie:'ATC-GA2289',fab:'Atlas Copco',garantia:'—',valor:'R$ 32.000'},
-  {tag:'IND-047',nome:'Torno CNC Romi Galaxy 15M',cat:'Industrial',loc:'TK5 CEMIG',status:'Ativo',resp:'Paulo R.',serie:'ROMI-G15M-022',fab:'Romi',garantia:'08/2027',valor:'R$ 185.000'},
-  {tag:'IND-055',nome:'Gerador Cummins 150kVA',cat:'Industrial',loc:'TK4 CEMIG',status:'Ativo',resp:'Paulo R.',serie:'CUM150K-88',fab:'Cummins',garantia:'01/2026',valor:'R$ 95.000'},
-  {tag:'VEI-004',nome:'Empilhadeira Toyota 7FBH25',cat:'Veículos',loc:'Matriz — Bauru',status:'Ativo',resp:'Carlos S.',serie:'TOY7FBH-044',fab:'Toyota',garantia:'05/2027',valor:'R$ 78.000'},
-  {tag:'VEI-009',nome:'Caminhão Mercedes-Benz Atego',cat:'Veículos',loc:'Pós Venda',status:'Em manutenção',resp:'Carlos S.',serie:'MB-ATG-2019-001',fab:'Mercedes-Benz',garantia:'—',valor:'R$ 260.000'},
-  {tag:'VEI-012',nome:'Van Sprinter 416 CDI',cat:'Veículos',loc:'Pós Venda',status:'Ativo',resp:'Carlos S.',serie:'VAN-SPR-2022',fab:'Mercedes-Benz',garantia:'09/2026',valor:'R$ 145.000'},
-  {tag:'INF-012',nome:'No-break APC Smart UPS 20kVA',cat:'Infraestrutura',loc:'Matriz — Bauru',status:'Ativo',resp:'Ana L.',serie:'APC20K-PRO-7',fab:'APC',garantia:'05/2026',valor:'R$ 22.000'},
-  {tag:'INF-019',nome:'Ar-condicionado Carrier 60kBTU',cat:'Infraestrutura',loc:'TK5 CEMIG',status:'Ativo',resp:'Ana L.',serie:'CAR60K-2023-4',fab:'Carrier',garantia:'11/2026',valor:'R$ 18.000'},
-  {tag:'INF-030',nome:'CFTV Sistema 32 câmeras',cat:'Infraestrutura',loc:'Matriz — Bauru',status:'Ativo',resp:'João M.',serie:'CFTV-32CH-001',fab:'Intelbras',garantia:'07/2027',valor:'R$ 35.000'},
-  {tag:'MOB-001',nome:'Mesa Diretoria c/ Painel',cat:'Mobiliário',loc:'Matriz — Bauru',status:'Ativo',resp:'Ana L.',serie:'—',fab:'Neumóvel',garantia:'—',valor:'R$ 3.800'},
-  {tag:'MOB-015',nome:'Cadeiras Ergonômicas (lote 10)',cat:'Mobiliário',loc:'Matriz — Bauru',status:'Ativo',resp:'Ana L.',serie:'—',fab:'Netsit',garantia:'—',valor:'R$ 8.900'},
+  // --- Dados reais importados ---
+  {tag:'GA-000836',erp:'AF-002596',nome:'Chave de Impacto 1/2 Pol. 203NM 20V',cat:'Industrial',modelo:'203NM',serie:'12333333',fab:'DEWALT',loc:'Matriz Bauru',depto:'Almoxarifado',cc:'212500',status:'Ativo',resp:'Raquel M.',garantia:'—',valor:'R$ 2.454,26'},
+  {tag:'GA-000837',erp:'AF-002596',nome:'Chave de Impacto 1/2 Pol. 203NM 20V',cat:'Industrial',modelo:'203NM',serie:'12333334',fab:'DEWALT',loc:'Obra',depto:'TK5 CEMIG',cc:'3031555',status:'Ativo',resp:'Raquel M.',garantia:'—',valor:'R$ 2.454,26'},
+  {tag:'GA-000838',erp:'AF-002596',nome:'Chave de Impacto 1/2 Pol. 203NM 20V',cat:'Industrial',modelo:'203NM',serie:'12333335',fab:'DEWALT',loc:'Obra',depto:'TK4 CEMIG',cc:'3031557',status:'Ativo',resp:'Raquel M.',garantia:'—',valor:'R$ 2.454,26'},
+  {tag:'GA-000839',erp:'AF-002596',nome:'Chave de Impacto 1/2 Pol. 203NM 20V',cat:'Industrial',modelo:'203NM',serie:'12333336',fab:'DEWALT',loc:'Obra',depto:'CDD Bom Despacho',cc:'3031558',status:'Ativo',resp:'Raquel M.',garantia:'—',valor:'R$ 2.454,26'},
+  // --- Dados de demonstração ---
+  {tag:'TI-001',erp:'',nome:'Servidor Dell PowerEdge R750',cat:'TI',modelo:'PowerEdge R750',loc:'Matriz — Bauru',depto:'TI',cc:'',status:'Ativo',resp:'João M.',serie:'SN-DEL00112',fab:'Dell',garantia:'12/2027',valor:'R$ 48.000'},
+  {tag:'TI-002',erp:'',nome:'Switch Cisco Catalyst 2960',cat:'TI',modelo:'Catalyst 2960',loc:'Matriz — Bauru',depto:'TI',cc:'',status:'Ativo',resp:'João M.',serie:'FOC2248X1AB',fab:'Cisco',garantia:'06/2026',valor:'R$ 8.500'},
+  {tag:'TI-003',erp:'',nome:'Notebook Dell Latitude 5540',cat:'TI',modelo:'Latitude 5540',loc:'Pós Venda',depto:'',cc:'',status:'Inativo',resp:'Fátima O.',serie:'SN-NBTK047',fab:'Dell',garantia:'—',valor:'R$ 4.200'},
+  {tag:'TI-004',erp:'',nome:'Storage NetApp AFF A250',cat:'TI',modelo:'AFF A250',loc:'Matriz — Bauru',depto:'TI',cc:'',status:'Ativo',resp:'João M.',serie:'NTA2250-09',fab:'NetApp',garantia:'03/2028',valor:'R$ 120.000'},
+  {tag:'IND-023',erp:'',nome:'Compressor Atlas Copco GA22',cat:'Industrial',modelo:'GA22',loc:'TK4 CEMIG',depto:'',cc:'',status:'Em manutenção',resp:'Paulo R.',serie:'ATC-GA2289',fab:'Atlas Copco',garantia:'—',valor:'R$ 32.000'},
+  {tag:'IND-047',erp:'',nome:'Torno CNC Romi Galaxy 15M',cat:'Industrial',modelo:'Galaxy 15M',loc:'TK5 CEMIG',depto:'',cc:'',status:'Ativo',resp:'Paulo R.',serie:'ROMI-G15M-022',fab:'Romi',garantia:'08/2027',valor:'R$ 185.000'},
+  {tag:'IND-055',erp:'',nome:'Gerador Cummins 150kVA',cat:'Industrial',modelo:'150kVA',loc:'TK4 CEMIG',depto:'',cc:'',status:'Ativo',resp:'Paulo R.',serie:'CUM150K-88',fab:'Cummins',garantia:'01/2026',valor:'R$ 95.000'},
+  {tag:'VEI-004',erp:'',nome:'Empilhadeira Toyota 7FBH25',cat:'Veículos',modelo:'7FBH25',loc:'Matriz — Bauru',depto:'',cc:'',status:'Ativo',resp:'Carlos S.',serie:'TOY7FBH-044',fab:'Toyota',garantia:'05/2027',valor:'R$ 78.000'},
+  {tag:'VEI-009',erp:'',nome:'Caminhão Mercedes-Benz Atego',cat:'Veículos',modelo:'Atego',loc:'Pós Venda',depto:'',cc:'',status:'Em manutenção',resp:'Carlos S.',serie:'MB-ATG-2019-001',fab:'Mercedes-Benz',garantia:'—',valor:'R$ 260.000'},
+  {tag:'VEI-012',erp:'',nome:'Van Sprinter 416 CDI',cat:'Veículos',modelo:'Sprinter 416',loc:'Pós Venda',depto:'',cc:'',status:'Ativo',resp:'Carlos S.',serie:'VAN-SPR-2022',fab:'Mercedes-Benz',garantia:'09/2026',valor:'R$ 145.000'},
+  {tag:'INF-012',erp:'',nome:'No-break APC Smart UPS 20kVA',cat:'Infraestrutura',modelo:'Smart UPS 20kVA',loc:'Matriz — Bauru',depto:'',cc:'',status:'Ativo',resp:'Ana L.',serie:'APC20K-PRO-7',fab:'APC',garantia:'05/2026',valor:'R$ 22.000'},
+  {tag:'INF-019',erp:'',nome:'Ar-condicionado Carrier 60kBTU',cat:'Infraestrutura',modelo:'60kBTU',loc:'TK5 CEMIG',depto:'',cc:'',status:'Ativo',resp:'Ana L.',serie:'CAR60K-2023-4',fab:'Carrier',garantia:'11/2026',valor:'R$ 18.000'},
+  {tag:'INF-030',erp:'',nome:'CFTV Sistema 32 câmeras',cat:'Infraestrutura',modelo:'32CH',loc:'Matriz — Bauru',depto:'',cc:'',status:'Ativo',resp:'João M.',serie:'CFTV-32CH-001',fab:'Intelbras',garantia:'07/2027',valor:'R$ 35.000'},
+  {tag:'MOB-001',erp:'',nome:'Mesa Diretoria c/ Painel',cat:'Mobiliário',modelo:'—',loc:'Matriz — Bauru',depto:'',cc:'',status:'Ativo',resp:'Ana L.',serie:'—',fab:'Neumóvel',garantia:'—',valor:'R$ 3.800'},
+  {tag:'MOB-015',erp:'',nome:'Cadeiras Ergonômicas (lote 10)',cat:'Mobiliário',modelo:'—',loc:'Matriz — Bauru',depto:'',cc:'',status:'Ativo',resp:'Ana L.',serie:'—',fab:'Netsit',garantia:'—',valor:'R$ 8.900'},
 ];
 
 // ── LOCALIZAÇÕES ──
@@ -1072,12 +1078,16 @@ function openDrawer(tag){
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
       <div><div class="rev-lbl">Nome</div><div style="font-size:12px;font-weight:600">${a.nome}</div></div>
       <div><div class="rev-lbl">Fabricante</div><div style="font-size:12px">${a.fab}</div></div>
+      <div><div class="rev-lbl">Modelo</div><div style="font-size:12px">${a.modelo||'—'}</div></div>
       <div><div class="rev-lbl">Número de série</div><div style="font-size:12px;font-family:monospace">${a.serie}</div></div>
+      ${a.erp?`<div><div class="rev-lbl">Código ERP</div><div style="font-size:12px;font-family:monospace;color:var(--g-orange)">${a.erp}</div></div>`:''}
       <div><div class="rev-lbl">Valor de aquisição</div><div style="font-size:12px;font-weight:600;color:var(--g-text)">${a.valor}</div></div>
     </div>
     <div class="rev-title">Localização</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-      <div><div class="rev-lbl">Unidade</div><div style="font-size:12px">${a.loc}</div></div>
+      <div><div class="rev-lbl">Local</div><div style="font-size:12px">${a.loc}</div></div>
+      <div><div class="rev-lbl">Departamento</div><div style="font-size:12px">${a.depto||'—'}</div></div>
+      ${a.cc?`<div><div class="rev-lbl">Centro de custo</div><div style="font-size:12px;font-family:monospace">${a.cc}</div></div>`:''}
       <div><div class="rev-lbl">Responsável</div><div style="font-size:12px">${a.resp}</div></div>
     </div>
     <div class="rev-title">Garantia</div>
@@ -1211,11 +1221,9 @@ function goStep(n){
   if(n===2) updateStepEspec();
 }
 function gerarTag(){
-  const tipo = document.getElementById('cad-tipo')?.value;
-  const prefixos={TI:'TI',Industrial:'IND',Veículos:'VEI',Infraestrutura:'INF',Mobiliário:'MOB'};
-  const pref=prefixos[tipo]||'AT';
-  const num=String(ativos.length+1+Math.floor(Math.random()*10)).padStart(3,'0');
-  const tag=pref+'-'+num;
+  const gaNumeros=ativos.filter(a=>a.tag.startsWith('GA-')).map(a=>parseInt(a.tag.replace('GA-',''))||0);
+  const proximo=gaNumeros.length?Math.max(...gaNumeros)+1:1;
+  const tag='GA-'+String(proximo).padStart(6,'0');
   document.getElementById('cad-tag').value=tag;
   showToast('TAG sugerida: '+tag);
 }
