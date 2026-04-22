@@ -229,7 +229,7 @@ tr:hover td{background:var(--g-bg)}
         </div>
         <div class="nav-item" onclick="nav('inventario',this)">
           <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke-width="1.8"><rect x="2" y="3" width="12" height="10" rx="1.2"/><path d="M5 3V2M11 3V2M2 7h12"/></svg>
-          Inventário
+          Estoque
         </div>
         <div class="nav-item" onclick="nav('manutencao',this)">
           <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke-width="1.8"><path d="M13 3l-2 2-1-1 2-2c-.5-.2-2-.3-3 1L4 8l1 1-1 1-2-2 1-1 5-5c1-1.5 3-1.5 3-1.5L13 3z"/><circle cx="10" cy="10" r="3"/></svg>
@@ -1294,7 +1294,7 @@ function editLoc(id){
 }
 
 // ── NAVEGAÇÃO ──
-const pages={dashboard:'Dashboard',inventario:'Inventário de ativos',manutencao:'Ordens de serviço',rastreamento:'Rastreamento',relatorios:'Relatórios',cadastro:'Novo ativo',localizacoes:'Localizações',configuracoes:'Configurações'};
+const pages={dashboard:'Dashboard',inventario:'Estoque de ativos',manutencao:'Ordens de serviço',rastreamento:'Rastreamento',relatorios:'Relatórios',cadastro:'Novo ativo',localizacoes:'Localizações',configuracoes:'Configurações'};
 const btnLabels={dashboard:'+ Novo ativo',inventario:'+ Cadastrar ativo',manutencao:'+ Nova OS',rastreamento:'Exportar mapa',relatorios:'Exportar tudo',cadastro:'',localizacoes:'+ Nova localização',configuracoes:'+ Novo usuário'};
 function nav(id,el){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
