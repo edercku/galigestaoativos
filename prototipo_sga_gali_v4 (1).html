@@ -1922,10 +1922,24 @@ function renderDashboard(){
       <div class="progress-bar-wrap"><div class="progress-bar-fill${cls==='warn'?'':cls==='neutral'?' style="background:var(--g-border2)"':cls==='danger'?' style="background:var(--g-danger)"':''}" style="width:${pct}%"></div></div>
       <span class="progress-val">${n}</span>
     </div>`;}).join('');
-  // Timeline vazia
+  // Timeline de ocorrências
   const tl=document.getElementById('dash-timeline');
-  if(tl) tl.innerHTML=osList.length?'':
-    '<div style="padding:16px;color:var(--g-hint);font-size:12px">Nenhuma ocorrência registrada</div>';
+  if(!tl) return;
+  if(!osList.length){
+    tl.innerHTML='<div style="padding:16px;color:var(--g-hint);font-size:12px">Nenhuma ocorrência registrada</div>';
+    return;
+  }
+  const priorColor={Crítica:'var(--g-danger)',Alta:'var(--g-warn)',Média:'var(--g-orange)',Baixa:'var(--g-hint)'};
+  tl.innerHTML=osList.slice(0,5).map(o=>`
+    <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--g-border)">
+      <div style="width:7px;height:7px;border-radius:50%;background:${priorColor[o.prior]||'var(--g-orange)'};margin-top:4px;flex-shrink:0"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:500;color:var(--g-text)">${o.num} — ${o.ativo}</div>
+        <div style="font-size:11px;color:var(--g-hint);margin-top:2px">${o.tipo} · ${o.prior} · ${o.data}</div>
+        <div style="font-size:11px;color:var(--g-muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.desc}</div>
+      </div>
+      <span class="badge badge-${o.status==='Aberto'?'info':o.status==='Em andamento'?'warning':'success'}" style="flex-shrink:0;height:fit-content">${o.status}</span>
+    </div>`).join('');
 }
 
 // ── INIT ──
