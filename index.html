@@ -775,6 +775,36 @@ tr:hover td{background:var(--g-bg)}
             </tbody>
           </table>
         </div>
+        <!-- CATEGORIAS -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-header">
+            <span class="card-title">Categorias de ativos</span>
+            <button class="btn btn-primary" style="font-size:11px;padding:5px 10px" onclick="toggleAddCat()">+ Nova categoria</button>
+          </div>
+          <div id="cat-list"></div>
+          <div class="add-loc-form" id="cat-form" style="display:none;flex-direction:column;gap:10px;padding:14px 16px;background:var(--g-orange-light);border-top:1px solid var(--g-orange-mid)">
+            <div style="font-size:12px;font-weight:600;color:var(--g-orange)" id="cat-form-title">Nova categoria</div>
+            <div style="display:grid;grid-template-columns:60px 1fr 1fr;gap:8px;align-items:end">
+              <div>
+                <div class="form-label" style="margin-bottom:4px">Ícone</div>
+                <input class="form-input" id="cat-icone" placeholder="🔧" style="text-align:center;font-size:18px">
+              </div>
+              <div>
+                <div class="form-label" style="margin-bottom:4px">Nome *</div>
+                <input class="form-input" id="cat-nome" placeholder="ex: Energia Solar">
+              </div>
+              <div>
+                <div class="form-label" style="margin-bottom:4px">Descrição</div>
+                <input class="form-input" id="cat-desc" placeholder="ex: Inversores, painéis, string box">
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;justify-content:flex-end">
+              <button class="btn" style="font-size:11px" onclick="cancelCat()">Cancelar</button>
+              <button class="btn btn-primary" style="font-size:11px" onclick="salvarCat()">Salvar categoria</button>
+            </div>
+          </div>
+        </div>
+
         <div class="card">
           <div class="card-header"><span class="card-title">Integrações</span></div>
           <table>
@@ -795,6 +825,16 @@ tr:hover td{background:var(--g-bg)}
 
 <script>
 // ── Estado global ──
+let categorias = [
+  {id:1, nome:'TI',             icone:'🖥',  desc:'Tecnologia da Informação'},
+  {id:2, nome:'Industrial',     icone:'⚙',   desc:'Equipamentos industriais e ferramentas'},
+  {id:3, nome:'Veículos',       icone:'🚛',  desc:'Veículos e frota'},
+  {id:4, nome:'Infraestrutura', icone:'🏗',  desc:'Instalações e infraestrutura física'},
+  {id:5, nome:'Mobiliário',     icone:'🪑',  desc:'Mobiliário e escritório'},
+];
+let nextCatId = 6;
+let editingCatId = null;
+
 let localizacoes = [
   {id:1, nome:'Matriz — Bauru',  tipo:'Sede / Matriz', ativos:312, padrao:true},
   {id:2, nome:'TK4 CEMIG',       tipo:'Obra / Campo',  ativos:94,  padrao:true},
@@ -817,6 +857,83 @@ const ativos=[
 ];
 
 // ── LOCALIZAÇÕES ──
+// ── Categorias CRUD ──
+function renderCategorias(){
+  const em_uso = cat => ativos.filter(a=>a.cat===cat.nome).length;
+  document.getElementById('cat-list').innerHTML = categorias.map(c=>`
+    <div class="loc-item">
+      <div style="display:flex;align-items:center;gap:10px;flex:1">
+        <span style="font-size:18px;width:28px;text-align:center">${c.icone||'📦'}</span>
+        <div>
+          <div class="loc-name">${c.nome}</div>
+          <div class="loc-count">${c.desc||'Sem descrição'} &mdash; <strong>${em_uso(c)}</strong> ativo(s)</div>
+        </div>
+      </div>
+      <div class="loc-actions">
+        <button class="loc-btn" onclick="editarCat(${c.id})">Editar</button>
+        <button class="loc-btn danger" onclick="removerCat(${c.id})" ${em_uso(c)>0?'title="Categoria em uso" style="opacity:.4;cursor:not-allowed"':''}>Excluir</button>
+      </div>
+    </div>`).join('');
+}
+function toggleAddCat(){
+  editingCatId=null;
+  document.getElementById('cat-form-title').textContent='Nova categoria';
+  document.getElementById('cat-icone').value='';
+  document.getElementById('cat-nome').value='';
+  document.getElementById('cat-desc').value='';
+  const f=document.getElementById('cat-form');
+  f.style.display=f.style.display==='none'?'flex':'none';
+}
+function cancelCat(){
+  editingCatId=null;
+  document.getElementById('cat-form').style.display='none';
+}
+function salvarCat(){
+  const nome=document.getElementById('cat-nome').value.trim();
+  if(!nome){showToast('Informe o nome da categoria');return;}
+  if(editingCatId){
+    const c=categorias.find(x=>x.id===editingCatId);
+    c.nome=nome;
+    c.icone=document.getElementById('cat-icone').value.trim()||'📦';
+    c.desc=document.getElementById('cat-desc').value.trim();
+    showToast('Categoria atualizada');
+  } else {
+    if(categorias.find(x=>x.nome.toLowerCase()===nome.toLowerCase())){showToast('Categoria já existe');return;}
+    categorias.push({id:nextCatId++,nome,icone:document.getElementById('cat-icone').value.trim()||'📦',desc:document.getElementById('cat-desc').value.trim()});
+    showToast('Categoria criada: '+nome);
+  }
+  cancelCat();
+  renderCategorias();
+  updateCatSelects();
+}
+function editarCat(id){
+  const c=categorias.find(x=>x.id===id);
+  if(!c)return;
+  editingCatId=id;
+  document.getElementById('cat-form-title').textContent='Editar categoria';
+  document.getElementById('cat-icone').value=c.icone||'';
+  document.getElementById('cat-nome').value=c.nome;
+  document.getElementById('cat-desc').value=c.desc||'';
+  document.getElementById('cat-form').style.display='flex';
+  document.getElementById('cat-form').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function removerCat(id){
+  const c=categorias.find(x=>x.id===id);
+  if(!c)return;
+  if(ativos.filter(a=>a.cat===c.nome).length>0){showToast('Não é possível excluir: categoria em uso');return;}
+  categorias=categorias.filter(x=>x.id!==id);
+  showToast('Categoria removida');
+  renderCategorias();
+  updateCatSelects();
+}
+function updateCatSelects(){
+  const opts=categorias.map(c=>`<option value="${c.nome}">${c.icone} ${c.nome}</option>`).join('');
+  const filt=document.getElementById('inv-filter-cat');
+  if(filt) filt.innerHTML='<option value="">Todas categorias</option>'+opts;
+  const cad=document.getElementById('cad-tipo');
+  if(cad) cad.innerHTML='<option value="">-- Selecione --</option>'+categorias.map(c=>`<option value="${c.nome}">${c.icone} ${c.nome} &mdash; ${c.desc||''}</option>`).join('');
+}
+
 function renderLocList(){
   document.getElementById('loc-list').innerHTML = localizacoes.map(l=>`
     <div class="loc-item">
@@ -897,6 +1014,7 @@ function nav(id,el){
   if(id==='rastreamento') renderRastr();
   if(id==='relatorios') renderRel();
   if(id==='localizacoes') renderLocList();
+  if(id==='configuracoes') renderCategorias();
   if(id==='cadastro') initCadastro();
 }
 function actionBtn(){
@@ -1303,6 +1421,8 @@ document.getElementById('dash-timeline').innerHTML=eventos.map(e=>`<div class="t
 
 // ── INIT ──
 filteredAtivos=[...ativos];
+renderCategorias();
+updateCatSelects();
 renderLocList();
 renderInv();
 renderOS('Todos');
