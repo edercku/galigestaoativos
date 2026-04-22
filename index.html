@@ -1353,9 +1353,8 @@ function osPreviewAtivo(tagParam){
 function osAbrirScan(){ closeOSModal(); openTransModal(''); }
 function salvarOS(){
   const tag=document.getElementById('os-tag').value.trim();
-  const desc=document.getElementById('os-desc').value.trim();
+  const desc=document.getElementById('os-desc').value.trim()||'Aguardando diagnóstico';
   if(!tag){showToast('Informe a TAG do ativo');return;}
-  if(!desc){showToast('Informe a descrição do problema');return;}
   const a=ativos.find(x=>x.tag===tag);
   if(!a){showToast('TAG não encontrada: '+tag);return;}
   const num='OS-'+String(nextOsNum).padStart(4,'0');
@@ -1372,10 +1371,11 @@ function salvarOS(){
     dtPrev:document.getElementById('os-dt-prev').value,
     desc, obs:document.getElementById('os-obs').value
   });
+  // Atualiza status do ativo para Em manutenção
+  a.status='Em manutenção';
   closeOSModal();
-  showToast('OS '+num+' aberta com sucesso!');
+  showToast('OS '+num+' aberta — ativo marcado como Em manutenção');
   nav('manutencao',null);
-  renderOS('Todos');
   renderDashboard();
 }
 
