@@ -664,7 +664,6 @@ tr:hover td{background:var(--g-bg)}
                 <label class="form-label">Departamento</label>
                 <select class="form-select" id="cad-depto">
                   <option value="">-- Selecione --</option>
-                  <option>Tecnologia da Informação</option><option>Operações</option><option>Manutenção</option>
                   <option>Logística</option><option>Administrativo</option><option>Pós-Venda</option>
                 </select>
               </div>
@@ -754,14 +753,14 @@ tr:hover td{background:var(--g-bg)}
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="7" r="2.5"/><path d="M8 1C4.7 1 2 3.7 2 7c0 5 6 8 6 8s6-3 6-8c0-3.3-2.7-6-6-6z"/></svg>
           Gerenciamento de Localizações
         </div>
-        <div class="card">
+        <div class="card" style="margin-bottom:14px">
           <div class="card-header">
-            <span class="card-title">Localizações cadastradas</span>
-            <button class="btn btn-primary" style="font-size:12px" onclick="toggleAddLoc()">+ Nova localização</button>
+            <span class="card-title">Setores / Áreas</span>
+            <button class="btn btn-primary" style="font-size:12px" onclick="toggleAddLoc()">+ Novo setor</button>
           </div>
           <div id="add-loc-form" class="add-loc-form">
             <div style="flex:1">
-              <label class="form-label" style="display:block;margin-bottom:5px">Nome da localização *</label>
+              <label class="form-label" style="display:block;margin-bottom:5px">Nome do setor / área *</label>
               <input class="form-input" id="new-loc-input" placeholder="ex: TK6 CEMIG, Filial Campinas..." style="width:100%">
             </div>
             <div style="min-width:120px">
@@ -770,7 +769,6 @@ tr:hover td{background:var(--g-bg)}
                 <option>Sede / Matriz</option>
                 <option>Obra / Campo</option>
                 <option>Filial</option>
-                <option>Pós Venda</option>
                 <option>Outro</option>
               </select>
             </div>
@@ -781,8 +779,28 @@ tr:hover td{background:var(--g-bg)}
           </div>
           <div id="loc-list"></div>
         </div>
+
+        <!-- DEPARTAMENTOS -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-header">
+            <span class="card-title">Departamentos</span>
+            <button class="btn btn-primary" style="font-size:12px" onclick="toggleAddDepto()">+ Novo departamento</button>
+          </div>
+          <div id="add-depto-form" class="add-loc-form">
+            <div style="flex:1">
+              <label class="form-label" style="display:block;margin-bottom:5px">Nome do departamento *</label>
+              <input class="form-input" id="new-depto-input" placeholder="ex: TK7 CEMIG, Engenharia..." style="width:100%">
+            </div>
+            <div style="display:flex;gap:6px;align-items:flex-end;padding-bottom:1px">
+              <button class="btn btn-primary" onclick="addDepto()">Salvar</button>
+              <button class="btn" onclick="toggleAddDepto()">Cancelar</button>
+            </div>
+          </div>
+          <div id="depto-list"></div>
+        </div>
+
         <div style="margin-top:4px;padding:10px 14px;background:var(--g-orange-light);border-radius:8px;font-size:12px;color:var(--g-orange);border:1px solid var(--g-orange-mid)">
-          💡 <strong>Dica:</strong> As localizações cadastradas aqui ficam disponíveis para seleção no cadastro de ativos e nos filtros de inventário.
+          💡 <strong>Dica:</strong> Setores/Áreas e Departamentos cadastrados ficam disponíveis para seleção no cadastro de ativos e nas transferências.
         </div>
       </div>
 
@@ -978,7 +996,7 @@ tr:hover td{background:var(--g-bg)}
         </div>
         <div class="form-group full" style="grid-column:1/-1">
           <label class="form-label">Departamento</label>
-          <input class="form-input" id="trans-novo-depto" placeholder="ex: Almoxarifado, TK5 CEMIG">
+          <select class="form-select" id="trans-novo-depto"><option value="">-- Selecione --</option></select>
         </div>
         <div class="form-group">
           <label class="form-label">Centro de custo</label>
@@ -1137,6 +1155,15 @@ let localizacoes = [
   {id:2, nome:'Obra',         tipo:'Obra / Campo',  ativos:0, padrao:true},
 ];
 let nextLocId = 3;
+
+let departamentos = [
+  {id:1, nome:'Pós Venda',        padrao:true},
+  {id:2, nome:'Almoxarifado',     padrao:true},
+  {id:3, nome:'TK5 CEMIG',        padrao:true},
+  {id:4, nome:'TK4 CEMIG',        padrao:true},
+  {id:5, nome:'CDD Bom Despacho', padrao:true},
+];
+let nextDeptoId = 6;
 let currentPage = 1;
 let viewMode = 'table'; // 'table' | 'cards'
 let filteredAtivos = [];
@@ -1288,7 +1315,60 @@ function removeLoc(id){
 function editLoc(id){
   const loc = localizacoes.find(l=>l.id===id);
   const novo = prompt('Novo nome para "'+loc.nome+'":', loc.nome);
-  if(novo && novo.trim()){ loc.nome = novo.trim(); renderLocList(); }
+  if(novo && novo.trim()){ loc.nome = novo.trim(); renderLocList(); updateLocSelects(); }
+}
+
+// ── DEPARTAMENTOS CRUD ──
+function renderDeptos(){
+  const em_uso = d => ativos.filter(a=>a.depto===d.nome).length;
+  document.getElementById('depto-list').innerHTML = departamentos.map(d=>`
+    <div class="loc-item">
+      <div>
+        <div class="loc-name">${d.nome}</div>
+        <div class="loc-count">${em_uso(d)} ativos vinculados</div>
+      </div>
+      <div class="loc-actions">
+        <button class="loc-btn" onclick="editDepto(${d.id})">✏ Editar</button>
+        ${d.padrao?`<button class="loc-btn" style="cursor:not-allowed;opacity:.4" title="Padrão do sistema">🔒</button>`:`<button class="loc-btn danger" onclick="removeDepto(${d.id})">✕ Remover</button>`}
+      </div>
+    </div>`).join('');
+  updateDeptoSelects();
+}
+function toggleAddDepto(){
+  const f = document.getElementById('add-depto-form');
+  f.classList.toggle('open');
+  if(f.classList.contains('open')) document.getElementById('new-depto-input').focus();
+}
+function addDepto(){
+  const inp = document.getElementById('new-depto-input');
+  const nome = inp.value.trim();
+  if(!nome){ inp.focus(); inp.style.borderColor='var(--g-danger)'; return; }
+  inp.style.borderColor='';
+  departamentos.push({id:nextDeptoId++, nome, padrao:false});
+  inp.value=''; toggleAddDepto(); renderDeptos();
+  showToast('Departamento "'+nome+'" adicionado!');
+}
+function removeDepto(id){
+  departamentos = departamentos.filter(d=>d.id!==id);
+  renderDeptos();
+}
+function editDepto(id){
+  const d = departamentos.find(x=>x.id===id);
+  const novo = prompt('Novo nome para "'+d.nome+'":', d.nome);
+  if(novo && novo.trim()){
+    const antigo = d.nome;
+    d.nome = novo.trim();
+    ativos.filter(a=>a.depto===antigo).forEach(a=>a.depto=d.nome);
+    renderDeptos();
+    showToast('Departamento renomeado para "'+d.nome+'"');
+  }
+}
+function updateDeptoSelects(){
+  const opts = departamentos.map(d=>`<option value="${d.nome}">${d.nome}</option>`).join('');
+  const cad = document.getElementById('cad-depto');
+  const trans = document.getElementById('trans-novo-depto');
+  if(cad) cad.innerHTML = '<option value="">-- Selecione --</option>' + opts;
+  if(trans) trans.innerHTML = '<option value="">-- Selecione --</option>' + opts;
 }
 
 // ── NAVEGAÇÃO ──
@@ -1312,7 +1392,7 @@ function nav(id,el){
   if(id==='manutencao') renderOS('Todos');
   if(id==='rastreamento'){renderRastr();renderMovimentacoes();}
   if(id==='relatorios'){renderRel();renderMovimentacoes();}
-  if(id==='localizacoes') renderLocList();
+  if(id==='localizacoes'){ renderLocList(); renderDeptos(); }
   if(id==='configuracoes') renderCategorias();
   if(id==='cadastro') initCadastro();
 }
@@ -1852,6 +1932,7 @@ filteredAtivos=[...ativos];
 renderCategorias();
 updateCatSelects();
 renderLocList();
+renderDeptos();
 renderDashboard();
 renderInv();
 renderOS('Todos');
