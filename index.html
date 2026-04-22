@@ -1293,7 +1293,7 @@ function editLoc(id){
 
 // ── NAVEGAÇÃO ──
 const pages={dashboard:'Dashboard',inventario:'Estoque de ativos',manutencao:'Ordens de serviço',rastreamento:'Rastreamento',relatorios:'Relatórios',cadastro:'Novo ativo',localizacoes:'Localizações',configuracoes:'Configurações'};
-const btnLabels={dashboard:'+ Novo ativo',inventario:'+ Cadastrar ativo',manutencao:'+ Nova OS',rastreamento:'Exportar mapa',relatorios:'Exportar tudo',cadastro:'',localizacoes:'+ Nova localização',configuracoes:'+ Novo usuário'};
+const btnLabels={dashboard:'',inventario:'+ Cadastrar ativo',manutencao:'+ Nova OS',rastreamento:'Exportar mapa',relatorios:'Exportar tudo',cadastro:'',localizacoes:'+ Nova localização',configuracoes:'+ Novo usuário'};
 function nav(id,el){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
