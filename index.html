@@ -289,15 +289,15 @@ tr:hover td{background:var(--g-bg)}
       <!-- DASHBOARD -->
       <div id="screen-dashboard" class="screen active">
         <div class="metrics">
-          <div class="metric"><div class="metric-label">Total de ativos</div><div class="metric-value">647</div><div class="metric-sub up">+12 este mês</div></div>
-          <div class="metric purple"><div class="metric-label">Operacionais</div><div class="metric-value">589</div><div class="metric-sub up">91% do total</div></div>
-          <div class="metric warn"><div class="metric-label">Em manutenção</div><div class="metric-value">34</div><div class="metric-sub warn">5 críticos</div></div>
-          <div class="metric danger"><div class="metric-label">OS em aberto</div><div class="metric-value">47</div><div class="metric-sub down">8 vencidas</div></div>
+          <div class="metric"><div class="metric-label">Total de ativos</div><div class="metric-value" id="dash-total">—</div></div>
+          <div class="metric purple"><div class="metric-label">Operacionais</div><div class="metric-value" id="dash-ativos">—</div></div>
+          <div class="metric warn"><div class="metric-label">Em manutenção</div><div class="metric-value" id="dash-manut">—</div></div>
+          <div class="metric danger"><div class="metric-label">OS em aberto</div><div class="metric-value" id="dash-os">0</div></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
           <div class="card">
-            <div class="card-header"><span class="card-title">Manutenções por mês</span><span style="font-size:11px;color:var(--g-hint)">2026</span></div>
-            <div class="mini-chart" id="bar-chart"></div>
+            <div class="card-header"><span class="card-title">Ativos por categoria</span></div>
+            <div class="progress-list" id="dash-cat-progress"></div>
           </div>
           <div class="card">
             <div class="card-header"><span class="card-title">Ativos por localização</span></div>
@@ -310,13 +310,8 @@ tr:hover td{background:var(--g-bg)}
             <div class="timeline" id="dash-timeline"></div>
           </div>
           <div class="card">
-            <div class="card-header"><span class="card-title">Disponibilidade</span></div>
-            <div class="progress-list">
-              <div class="progress-row"><span class="progress-name">Compressores</span><div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:96%"></div></div><span class="progress-val">96%</span></div>
-              <div class="progress-row"><span class="progress-name">Servidores</span><div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:99%"></div></div><span class="progress-val">99%</span></div>
-              <div class="progress-row"><span class="progress-name">Frota</span><div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:84%;background:var(--g-warn)"></div></div><span class="progress-val">84%</span></div>
-              <div class="progress-row"><span class="progress-name">Climatização</span><div class="progress-bar-wrap"><div class="progress-bar-fill purple" style="width:91%"></div></div><span class="progress-val">91%</span></div>
-            </div>
+            <div class="card-header"><span class="card-title">Status dos ativos</span></div>
+            <div class="progress-list" id="dash-status-list"></div>
           </div>
         </div>
       </div>
@@ -445,11 +440,11 @@ tr:hover td{background:var(--g-bg)}
       <!-- MANUTENÇÃO -->
       <div id="screen-manutencao" class="screen">
         <div class="filter-row" id="os-filters">
-          <div class="filter-chip active" onclick="filterOS('Todos',this)">Todos (47)</div>
-          <div class="filter-chip" onclick="filterOS('Aberto',this)">Aberto (28)</div>
-          <div class="filter-chip" onclick="filterOS('Em andamento',this)">Em andamento (11)</div>
-          <div class="filter-chip" onclick="filterOS('Concluído',this)">Concluído (8)</div>
-          <div class="filter-chip" style="border-color:#EEB0AE;color:var(--g-danger)" onclick="filterOS('Crítico',this)">⚠ Crítico (5)</div>
+          <div class="filter-chip active" onclick="filterOS('Todos',this)">Todos (0)</div>
+          <div class="filter-chip" onclick="filterOS('Aberto',this)">Aberto (0)</div>
+          <div class="filter-chip" onclick="filterOS('Em andamento',this)">Em andamento (0)</div>
+          <div class="filter-chip" onclick="filterOS('Concluído',this)">Concluído (0)</div>
+          <div class="filter-chip" style="border-color:#EEB0AE;color:var(--g-danger)" onclick="filterOS('Crítico',this)">⚠ Crítico (0)</div>
         </div>
         <div class="card" id="os-list"></div>
       </div>
@@ -462,10 +457,10 @@ tr:hover td{background:var(--g-bg)}
           <div class="map-grid-line" style="left:25%;top:0;bottom:0;width:1px"></div>
           <div class="map-grid-line" style="left:50%;top:0;bottom:0;width:1px"></div>
           <div class="map-grid-line" style="left:75%;top:0;bottom:0;width:1px"></div>
-          <div class="map-dot" style="top:25%;left:20%"></div><div class="map-label" style="top:21%;left:22%">Matriz — Bauru</div>
-          <div class="map-dot purple" style="top:52%;left:46%"></div><div class="map-label" style="top:48%;left:48%">TK4 CEMIG</div>
-          <div class="map-dot purple" style="top:68%;left:68%"></div><div class="map-label" style="top:64%;left:70%">TK5 CEMIG</div>
-          <div class="map-dot danger" style="top:36%;left:72%"></div><div class="map-label" style="top:32%;left:74%;color:var(--g-danger)">Pós Venda (3)</div>
+          <div class="map-dot" style="top:25%;left:20%"></div><div class="map-label" style="top:21%;left:22%">Matriz Bauru</div>
+          <div class="map-dot purple" style="top:45%;left:42%"></div><div class="map-label" style="top:41%;left:44%">TK4 CEMIG</div>
+          <div class="map-dot purple" style="top:62%;left:62%"></div><div class="map-label" style="top:58%;left:64%">TK5 CEMIG</div>
+          <div class="map-dot" style="top:35%;left:70%"></div><div class="map-label" style="top:31%;left:72%">CDD Bom Despacho</div>
           <div style="position:absolute;bottom:8px;right:12px;font-size:10px;color:var(--g-hint)">Mapa de localizações</div>
         </div>
         <div class="rastr-grid" id="rastr-grid"></div>
@@ -474,10 +469,10 @@ tr:hover td{background:var(--g-bg)}
       <!-- RELATÓRIOS -->
       <div id="screen-relatorios" class="screen">
         <div class="rel-grid">
-          <div class="rel-card orange"><div class="rel-num">R$ 84.320</div><div class="rel-label">Custo de manutenção — abr/2026</div></div>
-          <div class="rel-card"><div class="rel-num">94,2%</div><div class="rel-label">Disponibilidade média — ativos críticos</div></div>
-          <div class="rel-card orange"><div class="rel-num">23</div><div class="rel-label">Ativos com garantia vencendo em 30 dias</div></div>
-          <div class="rel-card"><div class="rel-num">18</div><div class="rel-label">Manutenções preventivas pendentes</div></div>
+          <div class="rel-card orange"><div class="rel-num" id="rel-total">—</div><div class="rel-label">Total de ativos cadastrados</div></div>
+          <div class="rel-card"><div class="rel-num" id="rel-ativos">—</div><div class="rel-label">Ativos operacionais</div></div>
+          <div class="rel-card orange"><div class="rel-num" id="rel-manut">—</div><div class="rel-label">Em manutenção</div></div>
+          <div class="rel-card"><div class="rel-num" id="rel-os">0</div><div class="rel-label">OS em aberto</div></div>
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title">Relatórios disponíveis</span><button class="btn btn-primary" style="font-size:11px;padding:5px 10px">Exportar todos</button></div>
@@ -836,12 +831,10 @@ let nextCatId = 6;
 let editingCatId = null;
 
 let localizacoes = [
-  {id:1, nome:'Matriz — Bauru',  tipo:'Sede / Matriz', ativos:312, padrao:true},
-  {id:2, nome:'TK4 CEMIG',       tipo:'Obra / Campo',  ativos:94,  padrao:true},
-  {id:3, nome:'TK5 CEMIG',       tipo:'Obra / Campo',  ativos:87,  padrao:true},
-  {id:4, nome:'Pós Venda',       tipo:'Pós Venda',     ativos:154, padrao:true},
+  {id:1, nome:'Matriz Bauru', tipo:'Sede / Matriz', ativos:0, padrao:true},
+  {id:2, nome:'Obra',         tipo:'Obra / Campo',  ativos:0, padrao:true},
 ];
-let nextLocId = 5;
+let nextLocId = 3;
 let currentPage = 1;
 let viewMode = 'table'; // 'table' | 'cards'
 let filteredAtivos = [];
@@ -1227,18 +1220,12 @@ function simulateImport(){
 }
 
 // ── OS ──
-const osList=[
-  {num:'OS-2847',tipo:'Preventiva',ativo:'Compressor Atlas Copco',loc:'TK4 CEMIG',prior:'Alta',status:'Em andamento',resp:'Paulo R.',data:'21/04/2026',desc:'Troca de filtros e verificação de válvulas — plano semestral'},
-  {num:'OS-2846',tipo:'Corretiva',ativo:'Caminhão Mercedes-Benz',loc:'Pós Venda',prior:'Crítica',status:'Aberto',resp:'Carlos S.',data:'20/04/2026',desc:'Motor superaquecendo — identificar causa raiz'},
-  {num:'OS-2845',tipo:'Preventiva',ativo:'No-break APC 20kVA',loc:'Matriz — Bauru',prior:'Média',status:'Aberto',resp:'Ana L.',data:'20/04/2026',desc:'Inspeção das baterias e teste de autonomia'},
-  {num:'OS-2844',tipo:'Corretiva',ativo:'Torno CNC Romi',loc:'TK5 CEMIG',prior:'Alta',status:'Concluído',resp:'Paulo R.',data:'19/04/2026',desc:'Substituição do eixo X danificado — concluído em 4h'},
-  {num:'OS-2843',tipo:'Preventiva',ativo:'Servidor Dell PowerEdge',loc:'Matriz — Bauru',prior:'Baixa',status:'Aberto',resp:'João M.',data:'19/04/2026',desc:'Limpeza interna e verificação de temperatura'},
-  {num:'OS-2842',tipo:'Corretiva',ativo:'Empilhadeira Toyota',loc:'Matriz — Bauru',prior:'Crítica',status:'Em andamento',resp:'Carlos S.',data:'18/04/2026',desc:'Falha no sistema hidráulico — aguardando peça'},
-];
+const osList=[];
 function priorBadge(p){const m={Crítica:'danger',Alta:'warning',Média:'info',Baixa:'neutral'};return`<span class="badge badge-${m[p]||'neutral'}">${p}</span>`;}
 function stBadge(s){const m={Aberto:'info','Em andamento':'warning',Concluído:'success'};return`<span class="badge badge-${m[s]||'neutral'}">${s}</span>`;}
 function renderOS(filter){
   const lista=filter==='Todos'?osList:filter==='Crítico'?osList.filter(o=>o.prior==='Crítica'):osList.filter(o=>o.status===filter);
+  if(!lista.length){document.getElementById('os-list').innerHTML='<div style="padding:32px;text-align:center;color:var(--g-hint);font-size:13px">Nenhuma ordem de serviço encontrada</div>';return;}
   document.getElementById('os-list').innerHTML=lista.map((o,i)=>`
     <div class="os-header" onclick="toggleOS(${i})">
       <span class="os-num">${o.num}</span>${priorBadge(o.prior)}
@@ -1258,20 +1245,15 @@ function filterOS(f,el){document.querySelectorAll('#os-filters .filter-chip').fo
 
 // ── RASTREAMENTO ──
 function renderRastr(){
-  const rastivos=[
-    {tag:'IND-023',nome:'Compressor Atlas Copco GA22',loc:'TK4 CEMIG',status:'Em manutenção',ultima:'20/04 14:32'},
-    {tag:'VEI-004',nome:'Empilhadeira Toyota 7FBH25',loc:'Matriz — Bauru',status:'Ativo',ultima:'21/04 09:15'},
-    {tag:'VEI-009',nome:'Caminhão Mercedes-Benz Atego',loc:'Pós Venda',status:'Em manutenção',ultima:'20/04 08:00'},
-    {tag:'TI-001',nome:'Servidor Dell PowerEdge R750',loc:'Matriz — Bauru',status:'Ativo',ultima:'22/04 08:00'},
-    {tag:'IND-047',nome:'Torno CNC Romi Galaxy 15M',loc:'TK5 CEMIG',status:'Ativo',ultima:'22/04 10:22'},
-    {tag:'INF-012',nome:'No-break APC Smart UPS',loc:'Matriz — Bauru',status:'Ativo',ultima:'22/04 07:00'},
-  ];
-  document.getElementById('rastr-grid').innerHTML=rastivos.map(a=>`
+  const rastivos=ativos;
+  document.getElementById('rastr-grid').innerHTML=rastivos.length===0
+    ?'<div style="padding:24px;text-align:center;color:var(--g-hint);font-size:13px">Nenhum ativo cadastrado</div>'
+    :rastivos.map(a=>`
     <div class="rastr-card">
       <div class="rastr-tag">${a.tag}</div>
       <div class="rastr-name">${a.nome}</div>
       <div class="rastr-loc">${a.loc}</div>
-      <div class="rastr-footer">${statusBadge(a.status)}<span style="font-size:10px;color:var(--g-hint)">${a.ultima}</span></div>
+      <div class="rastr-footer">${statusBadge(a.status)}<span style="font-size:10px;color:var(--g-hint)">${a.depto||a.loc}</span></div>
     </div>`).join('');
 }
 
@@ -1419,11 +1401,54 @@ const eventos=[
 ];
 document.getElementById('dash-timeline').innerHTML=eventos.map(e=>`<div class="tl-item"><div class="tl-dot ${e.dot}"></div><div><div class="tl-text">${e.text}</div><div class="tl-time">${e.time}</div></div></div>`).join('');
 
+// ── DASHBOARD dinâmico ──
+function renderDashboard(){
+  const total=ativos.length;
+  const atv=ativos.filter(a=>a.status==='Ativo').length;
+  const man=ativos.filter(a=>a.status==='Em manutenção').length;
+  const os=osList.length;
+  document.getElementById('dash-total').textContent=total;
+  document.getElementById('dash-ativos').textContent=atv;
+  document.getElementById('dash-manut').textContent=man;
+  document.getElementById('dash-os').textContent=os;
+  // Relatórios
+  const rt=document.getElementById('rel-total'); if(rt) rt.textContent=total;
+  const ra=document.getElementById('rel-ativos'); if(ra) ra.textContent=atv;
+  const rm=document.getElementById('rel-manut'); if(rm) rm.textContent=man;
+  // Ativos por categoria
+  const cats={};
+  ativos.forEach(a=>{cats[a.cat]=(cats[a.cat]||0)+1;});
+  const maxCat=Math.max(...Object.values(cats),1);
+  const cpEl=document.getElementById('dash-cat-progress');
+  if(cpEl) cpEl.innerHTML=Object.entries(cats).map(([c,n])=>`
+    <div class="progress-row">
+      <span class="progress-name">${c}</span>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${Math.round(n/maxCat*100)}%"></div></div>
+      <span class="progress-val">${n}</span>
+    </div>`).join('') || '<div style="padding:12px;color:var(--g-hint);font-size:12px">Sem dados</div>';
+  // Status dos ativos
+  const statusMap=[['Ativo','success'],['Em manutenção','warn'],['Inativo','neutral'],['Descartado','danger']];
+  const slEl=document.getElementById('dash-status-list');
+  if(slEl) slEl.innerHTML=statusMap.map(([s,cls])=>{
+    const n=ativos.filter(a=>a.status===s).length;
+    const pct=total?Math.round(n/total*100):0;
+    return`<div class="progress-row">
+      <span class="progress-name">${s}</span>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill${cls==='warn'?'':cls==='neutral'?' style="background:var(--g-border2)"':cls==='danger'?' style="background:var(--g-danger)"':''}" style="width:${pct}%"></div></div>
+      <span class="progress-val">${n}</span>
+    </div>`;}).join('');
+  // Timeline vazia
+  const tl=document.getElementById('dash-timeline');
+  if(tl) tl.innerHTML=osList.length?'':
+    '<div style="padding:16px;color:var(--g-hint);font-size:12px">Nenhuma ocorrência registrada</div>';
+}
+
 // ── INIT ──
 filteredAtivos=[...ativos];
 renderCategorias();
 updateCatSelects();
 renderLocList();
+renderDashboard();
 renderInv();
 renderOS('Todos');
 renderRastr();
