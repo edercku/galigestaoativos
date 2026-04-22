@@ -469,6 +469,20 @@ tr:hover td{background:var(--g-bg)}
           <div style="position:absolute;bottom:8px;right:12px;font-size:10px;color:var(--g-hint)">Mapa de localizações</div>
         </div>
         <div class="rastr-grid" id="rastr-grid"></div>
+
+        <!-- Histórico de movimentações -->
+        <div class="card" style="margin-top:14px">
+          <div class="card-header">
+            <span class="card-title">Histórico de movimentações</span>
+            <div style="display:flex;gap:6px;align-items:center">
+              <input class="search-input" id="mov-search" placeholder="Buscar TAG ou local..." style="width:180px;font-size:11px;padding:5px 9px" oninput="renderMovimentacoes()">
+              <span style="font-size:11px;color:var(--g-hint)" id="mov-count"></span>
+            </div>
+          </div>
+          <div id="mov-list">
+            <div style="padding:24px;text-align:center;color:var(--g-hint);font-size:12px">Nenhuma movimentação registrada ainda.<br>Realize uma transferência para ver o histórico aqui.</div>
+          </div>
+        </div>
       </div>
 
       <!-- RELATÓRIOS -->
@@ -479,10 +493,24 @@ tr:hover td{background:var(--g-bg)}
           <div class="rel-card orange"><div class="rel-num" id="rel-manut">—</div><div class="rel-label">Em manutenção</div></div>
           <div class="rel-card"><div class="rel-num" id="rel-os">0</div><div class="rel-label">OS em aberto</div></div>
         </div>
-        <div class="card">
+        <div class="card" style="margin-bottom:14px">
           <div class="card-header"><span class="card-title">Relatórios disponíveis</span><button class="btn btn-primary" style="font-size:11px;padding:5px 10px">Exportar todos</button></div>
           <table><thead><tr><th>Relatório</th><th style="width:130px">Atualizado</th><th style="width:90px">Formato</th><th style="width:90px">Ação</th></tr></thead>
           <tbody id="rel-tbody"></tbody></table>
+        </div>
+
+        <!-- Relatório de Movimentações -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Movimentações de ativos</span>
+            <div style="display:flex;gap:6px;align-items:center">
+              <span style="font-size:11px;color:var(--g-hint)" id="rel-mov-count"></span>
+              <button class="btn" style="font-size:11px;padding:5px 10px" onclick="showToast('Exportando movimentações...')">Exportar XLSX ↗</button>
+            </div>
+          </div>
+          <div id="rel-mov-table">
+            <div style="padding:24px;text-align:center;color:var(--g-hint);font-size:12px">Nenhuma movimentação registrada.</div>
+          </div>
         </div>
       </div>
 
@@ -1029,7 +1057,7 @@ function transExecutar(){
     </div>`;
   transGoStep(3);
   // Atualiza inventário e dashboard
-  filteredAtivos=[...ativos]; filterTable(); renderDashboard(); renderLocProgress();
+  filteredAtivos=[...ativos]; filterTable(); renderDashboard(); renderLocProgress(); renderMovimentacoes();
 }
 function transNovaTransferencia(){ transGoStep(1); document.getElementById('trans-tag-input').value=''; transAtivo=null; }
 
@@ -1222,8 +1250,8 @@ function nav(id,el){
   ab.style.display = btnLabels[id]==='' ? 'none' : '';
   if(id==='inventario'){ currentPage=1; filterTable(); }
   if(id==='manutencao') renderOS('Todos');
-  if(id==='rastreamento') renderRastr();
-  if(id==='relatorios') renderRel();
+  if(id==='rastreamento'){renderRastr();renderMovimentacoes();}
+  if(id==='relatorios'){renderRel();renderMovimentacoes();}
   if(id==='localizacoes') renderLocList();
   if(id==='configuracoes') renderCategorias();
   if(id==='cadastro') initCadastro();
@@ -1485,6 +1513,40 @@ function renderRastr(){
       <div class="rastr-loc">${a.loc}</div>
       <div class="rastr-footer">${statusBadge(a.status)}<span style="font-size:10px;color:var(--g-hint)">${a.depto||a.loc}</span></div>
     </div>`).join('');
+}
+
+// ── MOVIMENTAÇÕES ──
+function renderMovimentacoes(){
+  const q=(document.getElementById('mov-search')?.value||'').toLowerCase();
+  const lista=movimentacoes.filter(m=>!q||(m.tag+m.nome+m.locAntes+m.locDepois).toLowerCase().includes(q));
+  const countEl=document.getElementById('mov-count');
+  if(countEl) countEl.textContent=lista.length+' registro(s)';
+  const html=lista.length===0
+    ?'<div style="padding:24px;text-align:center;color:var(--g-hint);font-size:12px">Nenhuma movimentação registrada ainda.<br>Realize uma transferência para ver o histórico aqui.</div>'
+    :`<table><thead><tr>
+        <th style="width:90px">TAG</th>
+        <th>Ativo</th>
+        <th style="width:140px">De</th>
+        <th style="width:14px;text-align:center;color:var(--g-hint)">→</th>
+        <th style="width:140px">Para</th>
+        <th style="width:80px">Responsável</th>
+        <th style="width:120px">Data / Hora</th>
+      </tr></thead><tbody>${lista.map(m=>`<tr>
+        <td style="font-family:monospace;font-size:11px;font-weight:700;color:var(--g-orange)">${m.tag}</td>
+        <td style="font-size:11px">${m.nome}</td>
+        <td style="font-size:11px;color:var(--g-danger)">${m.locAntes}</td>
+        <td style="text-align:center;color:var(--g-hint);font-size:12px">→</td>
+        <td style="font-size:11px;color:var(--g-success)">${m.locDepois}</td>
+        <td style="font-size:11px;color:var(--g-muted)">${m.resp}</td>
+        <td style="font-size:11px;color:var(--g-muted)">${m.data}</td>
+      </tr>`).join('')}</tbody></table>`;
+  const el=document.getElementById('mov-list');
+  if(el) el.innerHTML=html;
+  // Atualiza também o bloco de relatórios
+  const relCount=document.getElementById('rel-mov-count');
+  if(relCount) relCount.textContent=movimentacoes.length+' registro(s)';
+  const relTable=document.getElementById('rel-mov-table');
+  if(relTable) relTable.innerHTML=html;
 }
 
 // ── RELATÓRIOS ──
