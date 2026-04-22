@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g-orange:#F07A00;
+  --g-orange-light:#FFF3E6;
+  --g-orange-mid:#FFD9A8;
+  --g-purple:#6B3FA0;
+  --g-purple-light:#F0EBF8;
+  --g-purple-mid:#C9B3E8;
+  --g-bg:#F5F6F8;
+  --g-surface:#FFFFFF;
+  --g-surface2:#F0F1F4;
+  --g-border:#E2E4E9;
+  --g-border2:#CDD0D8;
+  --g-text:#1A1C22;
+  --g-muted:#5A5E6B;
+  --g-hint:#9CA0AD;
+  --g-danger:#D93025;
+  --g-danger-bg:#FFF0EF;
+  --g-warn:#C47A00;
+  --g-warn-bg:#FFF8E6;
+  --g-success:#1A7F4B;
+  --g-success-bg:#EDFAF3;
+  --g-info:#1264A3;
+  --g-info-bg:#EBF5FF;
+}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--g-bg)}
+.app{display:flex;height:700px;border:1px solid var(--g-border);border-radius:14px;overflow:hidden;background:var(--g-bg);box-shadow:0 4px 24px rgba(0,0,0,.08)}
+/* SIDEBAR — dark theme */
+.sidebar{width:220px;min-width:220px;background:#16192A;border-right:none;display:flex;flex-direction:column}
+.sidebar-logo{padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px}
+/* Logo SVG inline */
+.nav-section{padding:8px 0}
+.nav-label{font-size:9px;font-weight:700;color:rgba(255,255,255,.3);padding:10px 18px 4px;text-transform:uppercase;letter-spacing:.1em}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px 9px 18px;font-size:13px;color:rgba(255,255,255,.55);cursor:pointer;border-radius:8px;margin:2px 8px;transition:all .15s;border-left:none}
+.nav-item:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.9)}
+.nav-item.active{background:var(--g-orange);color:#fff;font-weight:600}
+.nav-item.active .nav-icon{stroke:#fff}
+.nav-icon{width:15px;height:15px;flex-shrink:0;stroke:currentColor}
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--g-bg)}
+.topbar{padding:12px 20px;border-bottom:1px solid var(--g-border);background:var(--g-surface);display:flex;align-items:center;justify-content:space-between}
+.topbar-title{font-size:15px;font-weight:600;color:var(--g-text)}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+.btn{padding:7px 14px;border:1px solid var(--g-border2);border-radius:8px;background:var(--g-surface);color:var(--g-muted);font-size:12px;cursor:pointer;transition:all .15s;font-weight:500}
+.btn:hover{background:var(--g-bg);color:var(--g-text)}
+.btn-primary{background:var(--g-orange);color:#fff;border-color:var(--g-orange);font-weight:600}
+.btn-primary:hover{background:#D46B00;border-color:#D46B00}
+.btn-purple{background:var(--g-purple);color:#fff;border-color:var(--g-purple);font-weight:600}
+.btn-purple:hover{background:#5A3490}
+.content{flex:1;overflow-y:auto;padding:20px}
+.screen{display:none}.screen.active{display:block}
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.metric{background:var(--g-surface);border:1px solid var(--g-border);border-radius:10px;padding:14px;border-top:3px solid var(--g-orange)}
+.metric.purple{border-top-color:var(--g-purple)}
+.metric.warn{border-top-color:var(--g-warn)}
+.metric.danger{border-top-color:var(--g-danger)}
+.metric-label{font-size:11px;color:var(--g-muted);margin-bottom:5px}
+.metric-value{font-size:24px;font-weight:700;color:var(--g-text);line-height:1.1}
+.metric-sub{font-size:11px;margin-top:4px}
+.metric-sub.up{color:var(--g-success)}.metric-sub.down{color:var(--g-danger)}.metric-sub.warn{color:var(--g-warn)}
+/* CARDS */
+.card{background:var(--g-surface);border:1px solid var(--g-border);border-radius:10px;margin-bottom:14px;overflow:hidden}
+.card-header{padding:12px 16px;border-bottom:1px solid var(--g-border);display:flex;align-items:center;justify-content:space-between;background:var(--g-surface)}
+.card-title{font-size:13px;font-weight:600;color:var(--g-text)}
+/* TABLE */
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+th{font-size:11px;font-weight:600;color:var(--g-muted);text-align:left;padding:9px 14px;border-bottom:1px solid var(--g-border);background:var(--g-surface2);text-transform:uppercase;letter-spacing:.03em}
+td{font-size:12px;color:var(--g-text);padding:9px 14px;border-bottom:1px solid var(--g-border)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--g-bg)}
+/* BADGES */
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600}
+.badge-success{background:var(--g-success-bg);color:var(--g-success)}
+.badge-warning{background:var(--g-warn-bg);color:var(--g-warn)}
+.badge-danger{background:var(--g-danger-bg);color:var(--g-danger)}
+.badge-info{background:var(--g-info-bg);color:var(--g-info)}
+.badge-neutral{background:var(--g-surface2);color:var(--g-muted)}
+.badge-orange{background:var(--g-orange-light);color:var(--g-orange)}
+.badge-purple{background:var(--g-purple-light);color:var(--g-purple)}
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:16px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+.form-label{font-size:11px;font-weight:600;color:var(--g-muted)}
+.form-input,.form-select{padding:8px 11px;border:1px solid var(--g-border2);border-radius:8px;font-size:13px;background:var(--g-surface);color:var(--g-text);outline:none;transition:border-color .15s}
+.form-input:focus,.form-select:focus{border-color:var(--g-orange);box-shadow:0 0 0 3px var(--g-orange-light)}
+.form-input::placeholder{color:var(--g-hint)}
+/* CHARTS */
+.mini-chart{display:flex;align-items:flex-end;gap:4px;height:52px;padding:0 16px 12px}
+.bar{flex:1;border-radius:3px 3px 0 0;background:var(--g-orange-mid);min-width:0;transition:.2s;cursor:pointer}
+.bar:hover{background:var(--g-orange)}
+.bar.hi{background:var(--g-orange)}
+.progress-list{padding:12px 16px}
+.progress-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.progress-row:last-child{margin-bottom:0}
+.progress-name{font-size:12px;color:var(--g-muted);width:120px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.progress-bar-wrap{flex:1;height:6px;background:var(--g-surface2);border-radius:3px;overflow:hidden}
+.progress-bar-fill{height:100%;border-radius:3px;background:var(--g-orange)}
+.progress-bar-fill.purple{background:var(--g-purple)}
+.progress-val{font-size:11px;color:var(--g-hint);width:36px;text-align:right;font-weight:500}
+/* TIMELINE */
+.timeline{padding:12px 16px}
+.tl-item{display:flex;gap:10px;margin-bottom:12px}
+.tl-item:last-child{margin-bottom:0}
+.tl-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.tl-dot.success{background:var(--g-success)}.tl-dot.warning{background:var(--g-warn)}.tl-dot.info{background:var(--g-purple)}.tl-dot.danger{background:var(--g-danger)}
+.tl-text{font-size:12px;color:var(--g-text);line-height:1.4}
+.tl-time{font-size:11px;color:var(--g-hint);margin-top:1px}
+/* OS */
+.os-header{display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;border-bottom:1px solid var(--g-border);transition:background .1s}
+.os-header:hover{background:var(--g-bg)}
+.os-num{font-size:11px;font-weight:700;color:var(--g-orange);font-family:monospace;min-width:60px}
+.os-desc{font-size:12px;color:var(--g-text);flex:1}
+.os-detail{padding:12px 16px;background:var(--g-bg);border-bottom:1px solid var(--g-border);display:none}
+.os-detail.open{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.os-field{font-size:10px;color:var(--g-hint);margin-bottom:2px;font-weight:600;text-transform:uppercase}
+.os-val{font-size:12px;color:var(--g-text)}
+/* FILTERS */
+.filter-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.filter-chip{padding:5px 12px;border:1px solid var(--g-border2);border-radius:20px;font-size:11px;cursor:pointer;color:var(--g-muted);background:var(--g-surface);transition:all .15s;font-weight:500}
+.filter-chip.active{background:var(--g-orange-light);border-color:var(--g-orange);color:var(--g-orange)}
+.filter-chip:hover{background:var(--g-bg)}
+/* RASTREAMENTO */
+.rastr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.rastr-card{background:var(--g-surface);border:1px solid var(--g-border);border-radius:10px;padding:12px;cursor:pointer;transition:all .15s}
+.rastr-card:hover{border-color:var(--g-orange);box-shadow:0 2px 8px rgba(240,122,0,.1)}
+.rastr-tag{font-size:10px;font-weight:700;color:var(--g-orange);margin-bottom:4px;font-family:monospace}
+.rastr-name{font-size:13px;font-weight:600;color:var(--g-text);margin-bottom:2px}
+.rastr-loc{font-size:11px;color:var(--g-muted)}
+.rastr-footer{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+/* MAP */
+.map-placeholder{background:var(--g-surface2);border-radius:10px;height:160px;margin-bottom:14px;border:1px solid var(--g-border);position:relative;overflow:hidden}
+.map-grid-line{position:absolute;background:var(--g-border)}
+.map-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--g-orange);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.map-dot.purple{background:var(--g-purple)}
+.map-dot.danger{background:var(--g-danger)}
+.map-label{position:absolute;font-size:10px;color:var(--g-muted);white-space:nowrap;font-weight:500}
+/* RELATORIOS */
+.rel-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+.rel-card{background:var(--g-surface);border:1px solid var(--g-border);border-radius:10px;padding:14px;border-left:4px solid var(--g-purple)}
+.rel-card.orange{border-left-color:var(--g-orange)}
+.rel-num{font-size:22px;font-weight:700;color:var(--g-text)}
+.rel-label{font-size:11px;color:var(--g-muted);margin-top:3px}
+/* SEARCH */
+.search-bar{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.search-input{flex:1;padding:8px 12px;border:1px solid var(--g-border2);border-radius:8px;font-size:13px;background:var(--g-surface);color:var(--g-text);outline:none}
+.search-input::placeholder{color:var(--g-hint)}
+.search-input:focus{border-color:var(--g-orange)}
+.clickable{cursor:pointer;color:var(--g-orange);font-size:12px;font-weight:500}
+.clickable:hover{text-decoration:underline}
+/* LOCALIZAÇÕES */
+.loc-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--g-border);transition:background .1s}
+.loc-item:last-child{border-bottom:none}
+.loc-item:hover{background:var(--g-bg)}
+.loc-name{font-size:13px;font-weight:500;color:var(--g-text)}
+.loc-count{font-size:11px;color:var(--g-muted)}
+.loc-actions{display:flex;gap:6px}
+.loc-btn{padding:4px 10px;border:1px solid var(--g-border2);border-radius:6px;font-size:11px;cursor:pointer;background:var(--g-surface);color:var(--g-muted);transition:all .12s}
+.loc-btn:hover{border-color:var(--g-orange);color:var(--g-orange)}
+.loc-btn.danger:hover{border-color:var(--g-danger);color:var(--g-danger)}
+.add-loc-form{padding:14px 16px;background:var(--g-orange-light);border-top:1px solid var(--g-orange-mid);display:none}
+.add-loc-form.open{display:flex;gap:8px;align-items:flex-end}
+.section-tag{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:var(--g-orange-light);color:var(--g-orange);border:1px solid var(--g-orange-mid);margin-bottom:12px}
+/* STEPPER */
+.step-item{display:flex;align-items:center;gap:7px;cursor:pointer;flex:1;justify-content:center}
+.step-circle{width:24px;height:24px;border-radius:50%;background:var(--g-surface2);border:2px solid var(--g-border2);font-size:11px;font-weight:700;color:var(--g-hint);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s}
+.step-label{font-size:11px;color:var(--g-hint);font-weight:500;transition:.2s;white-space:nowrap}
+.step-item.active .step-circle{background:var(--g-orange);border-color:var(--g-orange);color:#fff}
+.step-item.active .step-label{color:var(--g-orange);font-weight:600}
+.step-item.done .step-circle{background:var(--g-success);border-color:var(--g-success);color:#fff}
+.step-item.done .step-label{color:var(--g-success)}
+.step-line{flex:1;height:2px;background:var(--g-border2);border-radius:1px;max-width:40px;transition:.2s}
+.step-line.done{background:var(--g-success)}
+.cad-step{animation:fadeUp .18s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--g-text);color:#fff;padding:10px 16px;border-radius:8px;font-size:12px;font-weight:500;z-index:999;animation:toastIn .2s ease;pointer-events:none}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* INVENTÁRIO METRICS */
+.inv-metric{background:var(--g-surface);border:1px solid var(--g-border);border-radius:8px;padding:10px 12px;border-top:3px solid var(--g-orange)}
+.inv-metric.purple{border-top-color:var(--g-purple)}
+.inv-metric.warn{border-top-color:var(--g-warn)}
+.inv-metric.danger{border-top-color:var(--g-danger)}
+.inv-metric.neutral{border-top-color:var(--g-border2)}
+/* ATIVO CARD (view cards) */
+.ativo-card{background:var(--g-surface);border:1px solid var(--g-border);border-radius:10px;padding:12px;cursor:pointer;transition:all .15s}
+.ativo-card:hover{border-color:var(--g-orange);box-shadow:0 2px 8px rgba(240,122,0,.1)}
+/* PAG BUTTON */
+.pag-btn{padding:4px 9px;border:1px solid var(--g-border2);border-radius:6px;font-size:11px;cursor:pointer;background:var(--g-surface);color:var(--g-muted);transition:.12s}
+.pag-btn:hover{border-color:var(--g-orange);color:var(--g-orange)}
+.pag-btn.active{background:var(--g-orange);border-color:var(--g-orange);color:#fff;font-weight:600}
+/* REVISÃO */
+.rev-group{margin-bottom:14px}
+.rev-title{font-size:10px;font-weight:700;color:var(--g-hint);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--g-border)}
+.rev-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.rev-row{font-size:12px;color:var(--g-text)}.rev-lbl{font-size:10px;color:var(--g-hint);margin-bottom:1px}
+/* CAT BADGE COLORS */
+.cat-TI{background:#EBF5FF;color:#1264A3}
+.cat-Industrial{background:#FFF3E6;color:#F07A00}
+.cat-Veículos{background:#EDFAF3;color:#1A7F4B}
+.cat-Infraestrutura{background:#F0EBF8;color:#6B3FA0}
+.cat-Mobiliário{background:#F0F1F4;color:#5A5E6B}
+</style>
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <!-- Logo Gali inline SVG (laranja + roxo) -->
+      <svg width="100" height="32" viewBox="0 0 120 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Raio / símbolo -->
+        <polygon points="18,2 10,18 16,18 8,34 26,14 19,14" fill="#F07A00"/>
+        <!-- GALI texto -->
+        <text x="32" y="26" font-family="system-ui,sans-serif" font-weight="800" font-size="22" fill="#ffffff" letter-spacing="-0.5">gali</text>
+        <!-- energia texto -->
+        <text x="32" y="34" font-family="system-ui,sans-serif" font-weight="400" font-size="9" fill="rgba(255,255,255,0.45)" letter-spacing="1.5">ENERGIA</text>
+      </svg>
+    </div>
+    <div style="flex:1;overflow-y:auto">
+      <div class="nav-section">
+        <div class="nav-label">Principal</div>
+        <div class="nav-item active" onclick="nav('dashboard',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke-width="1.8"><rect x="1" y="1" width="6" height="6" rx="1.2"/><rect x="9" y="1" width="6" height="6" rx="1.2"/><rect x="1" y="9" width="6" height="6" rx="1.2"/><rect x="9" y="9" width="6" height="6" rx="1.2"/></svg>
+          Dashboard
+        </div>
+        <div class="nav-item" onclick="nav('inventario',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke-width="1.8"><rect x="2" y="3" width="12" height="10" rx="1.2"/><path d="M5 3V2M11 3V2M2 7h12"/></svg>
+          Inventário
+        </div>
+        <div class="nav-item" onclick="nav('manutencao',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke-width="1.8"><path d="M13 3l-2 2-1-1 2-2c-.5-.2-2-.3-3 1L4 8l1 1-1 1-2-2 1-1 5-5c1-1.5 3-1.5 3-1.5L13 3z"/><circle cx="10" cy="10" r="3"/></svg>
+          Manutenção
+        </div>
+        <div class="nav-item" onclick="nav('rastreamento',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke-width="1.8"><circle cx="8" cy="7" r="2"/><path d="M8 1C5.2 1 3 3.2 3 6c0 4 5 9 5 9s5-5 5-9c0-2.8-2.2-5-5-5z"/></svg>
+          Rastreamento
+        </div>
+        <div class="nav-item" onclick="nav('relatorios',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke-width="1.8"><rect x="2" y="1" width="9" height="12" rx="1"/><path d="M5 5h5M5 8h4M11 10l3 3"/><path d="M11 10h3v3"/></svg>
+          Relatórios
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Configurações</div>
+        <div class="nav-item" onclick="nav('cadastro',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke-width="1.8"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M8 5v6M5 8h6"/></svg>
+          Novo ativo
+        </div>
+        <div class="nav-item" onclick="nav('localizacoes',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke-width="1.8"><circle cx="8" cy="7" r="2.5"/><path d="M8 1C4.7 1 2 3.7 2 7c0 5 6 8 6 8s6-3 6-8c0-3.3-2.7-6-6-6z"/></svg>
+          Localizações
+        </div>
+        <div class="nav-item" onclick="nav('configuracoes',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke-width="1.8"><circle cx="8" cy="8" r="2.2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4"/></svg>
+          Configurações
+        </div>
+      </div>
+    </div>
+    <div style="padding:12px 16px;border-top:1px solid rgba(255,255,255,.07)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--g-orange);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff">RM</div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.9)">Raquel Monteiro</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.4);font-weight:500">Administrador</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:4px;height:18px;border-radius:2px;background:var(--g-orange)"></div>
+        <div class="topbar-title" id="page-title">Dashboard</div>
+      </div>
+      <div class="topbar-actions">
+        <span style="font-size:11px;color:var(--g-hint)">Abril 2026</span>
+        <button class="btn btn-primary" id="action-btn" onclick="actionBtn()">+ Novo ativo</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div id="screen-dashboard" class="screen active">
+        <div class="metrics">
+          <div class="metric"><div class="metric-label">Total de ativos</div><div class="metric-value">647</div><div class="metric-sub up">+12 este mês</div></div>
+          <div class="metric purple"><div class="metric-label">Operacionais</div><div class="metric-value">589</div><div class="metric-sub up">91% do total</div></div>
+          <div class="metric warn"><div class="metric-label">Em manutenção</div><div class="metric-value">34</div><div class="metric-sub warn">5 críticos</div></div>
+          <div class="metric danger"><div class="metric-label">OS em aberto</div><div class="metric-value">47</div><div class="metric-sub down">8 vencidas</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Manutenções por mês</span><span style="font-size:11px;color:var(--g-hint)">2026</span></div>
+            <div class="mini-chart" id="bar-chart"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title">Ativos por localização</span></div>
+            <div class="progress-list" id="loc-progress"></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Últimas ocorrências</span><span class="clickable" onclick="nav('manutencao',null)">ver todas →</span></div>
+            <div class="timeline" id="dash-timeline"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title">Disponibilidade</span></div>
+            <div class="progress-list">
+              <div class="progress-row"><span class="progress-name">Compressores</span><div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:96%"></div></div><span class="progress-val">96%</span></div>
+              <div class="progress-row"><span class="progress-name">Servidores</span><div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:99%"></div></div><span class="progress-val">99%</span></div>
+              <div class="progress-row"><span class="progress-name">Frota</span><div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:84%;background:var(--g-warn)"></div></div><span class="progress-val">84%</span></div>
+              <div class="progress-row"><span class="progress-name">Climatização</span><div class="progress-bar-wrap"><div class="progress-bar-fill purple" style="width:91%"></div></div><span class="progress-val">91%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INVENTÁRIO -->
+      <div id="screen-inventario" class="screen" style="position:relative">
+        <!-- Métricas de inventário -->
+        <div id="inv-metrics" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px"></div>
+        <!-- Barra de busca e filtros -->
+        <div class="search-bar" style="flex-wrap:wrap;gap:6px;margin-bottom:12px">
+          <input class="search-input" placeholder="Buscar por nome, TAG, série, responsável..." id="inv-search" oninput="filterTable()" style="min-width:210px;flex:1">
+          <select class="form-select" style="width:128px" onchange="filterTable()" id="inv-filter-cat">
+            <option value="">Todas categorias</option>
+            <option>TI</option><option>Industrial</option><option>Veículos</option><option>Infraestrutura</option><option>Mobiliário</option>
+          </select>
+          <select class="form-select" style="width:142px" onchange="filterTable()" id="inv-filter-loc">
+            <option value="">Todas localizações</option>
+          </select>
+          <select class="form-select" style="width:112px" onchange="filterTable()" id="inv-filter-status">
+            <option value="">Todos status</option>
+            <option>Ativo</option><option>Em manutenção</option><option>Inativo</option><option>Descartado</option>
+          </select>
+          <button class="btn" style="font-size:11px;padding:5px 10px;margin-left:auto" onclick="toggleView()" id="view-toggle">⊞ Cards</button>
+        </div>
+
+        <!-- VIEW: Tabela -->
+        <div id="inv-table-view">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title" id="inv-count">647 ativos</span>
+              <div style="display:flex;gap:6px;align-items:center">
+                <span style="font-size:11px;color:var(--g-hint)" id="inv-page-info"></span>
+                <button class="btn" style="font-size:11px;padding:5px 10px" onclick="showImportModal()">⬆ Importar CSV</button>
+                <button class="btn" style="font-size:11px;padding:5px 10px">Exportar ↗</button>
+                <button class="btn btn-primary" style="font-size:11px;padding:5px 10px" onclick="nav('cadastro',null)">+ Cadastrar</button>
+              </div>
+            </div>
+            <div style="overflow-x:auto">
+              <table>
+                <thead><tr>
+                  <th style="width:20px;padding:9px 8px 9px 14px"><input type="checkbox" id="sel-all" onchange="toggleSelAll(this)" style="cursor:pointer"></th>
+                  <th style="width:80px">TAG</th>
+                  <th style="width:170px">Nome / Descrição</th>
+                  <th style="width:95px">Categoria</th>
+                  <th style="width:125px">Localização</th>
+                  <th style="width:80px">Status</th>
+                  <th style="width:85px">Responsável</th>
+                  <th style="width:80px">Garantia</th>
+                  <th style="width:55px">Ações</th>
+                </tr></thead>
+                <tbody id="inv-tbody"></tbody>
+              </table>
+            </div>
+            <!-- Paginação -->
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-top:1px solid var(--g-border);background:var(--g-surface2)">
+              <div style="display:flex;align-items:center;gap:7px">
+                <span style="font-size:11px;color:var(--g-muted)">Exibir</span>
+                <select class="form-select" style="width:56px;padding:3px 7px;font-size:11px" id="per-page" onchange="currentPage=1;renderInv()">
+                  <option>10</option><option selected>20</option><option>50</option>
+                </select>
+                <span style="font-size:11px;color:var(--g-muted)">por página</span>
+              </div>
+              <div style="display:flex;gap:4px" id="pag-btns"></div>
+            </div>
+          </div>
+          <!-- Barra ações em lote -->
+          <div id="bulk-bar" style="display:none;position:sticky;bottom:12px;background:var(--g-text);color:#fff;border-radius:10px;padding:9px 14px;align-items:center;gap:10px;font-size:12px;box-shadow:0 4px 16px rgba(0,0,0,.3);margin-top:8px">
+            <span id="bulk-count" style="font-weight:600">0 selecionados</span>
+            <div style="flex:1"></div>
+            <button class="btn" style="font-size:11px;background:transparent;border-color:rgba(255,255,255,.3);color:#fff" onclick="bulkAction('transferir')">↔ Transferir</button>
+            <button class="btn" style="font-size:11px;background:transparent;border-color:rgba(255,255,255,.3);color:#fff" onclick="bulkAction('status')">✓ Alterar status</button>
+            <button class="btn" style="font-size:11px;background:var(--g-danger);border-color:var(--g-danger);color:#fff" onclick="bulkAction('descartar')">✕ Descartar</button>
+            <button style="background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;font-size:16px;line-height:1" onclick="clearSel()">✕</button>
+          </div>
+        </div>
+
+        <!-- VIEW: Cards -->
+        <div id="inv-cards-view" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <span style="font-size:13px;font-weight:600;color:var(--g-text)" id="inv-count-card"></span>
+            <button class="btn btn-primary" style="font-size:11px;padding:5px 10px" onclick="nav('cadastro',null)">+ Cadastrar</button>
+          </div>
+          <div id="inv-cards-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
+          <div style="display:flex;justify-content:center;gap:4px;margin-top:12px" id="pag-btns-card"></div>
+        </div>
+
+        <!-- Drawer detalhe do ativo -->
+        <div id="ativo-drawer" style="display:none;position:absolute;top:0;right:0;bottom:0;width:340px;background:var(--g-surface);border-left:1px solid var(--g-border);z-index:10;overflow-y:auto;box-shadow:-4px 0 20px rgba(0,0,0,.1)">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--g-border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--g-surface);z-index:1">
+            <span style="font-size:13px;font-weight:600;color:var(--g-text)" id="drawer-title">Detalhes do ativo</span>
+            <button style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--g-muted);line-height:1" onclick="closeDrawer()">✕</button>
+          </div>
+          <div id="drawer-body" style="padding:16px"></div>
+        </div>
+
+        <!-- Modal importação -->
+        <div id="import-modal" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,.4);z-index:20;align-items:center;justify-content:center">
+          <div style="background:var(--g-surface);border-radius:12px;width:430px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.2)">
+            <div style="padding:14px 16px;border-bottom:1px solid var(--g-border);display:flex;align-items:center;justify-content:space-between">
+              <span style="font-size:14px;font-weight:600;color:var(--g-text)">Importar ativos em lote</span>
+              <button style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--g-muted)" onclick="hideImportModal()">✕</button>
+            </div>
+            <div style="padding:18px">
+              <div style="border:2px dashed var(--g-border2);border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:.15s" id="drop-zone" ondragover="event.preventDefault();this.style.borderColor='var(--g-orange)'" ondragleave="this.style.borderColor='var(--g-border2)'">
+                <div style="font-size:26px;margin-bottom:8px">📂</div>
+                <div style="font-size:13px;font-weight:600;color:var(--g-text);margin-bottom:3px">Arraste o arquivo aqui</div>
+                <div style="font-size:11px;color:var(--g-hint);margin-bottom:10px">ou clique para selecionar</div>
+                <div style="font-size:10px;color:var(--g-hint)">.CSV ou .XLSX — máx. 10.000 registros</div>
+              </div>
+              <div style="margin-top:12px;background:var(--g-orange-light);border-radius:8px;padding:9px 12px;font-size:11px;color:var(--g-orange);border:1px solid var(--g-orange-mid)">
+                📥 <strong>Template:</strong> <span class="clickable" style="color:var(--g-orange)">Baixar modelo CSV →</span>
+              </div>
+              <div style="margin-top:10px">
+                <div style="font-size:11px;font-weight:600;color:var(--g-muted);margin-bottom:5px">Campos aceitos no arquivo:</div>
+                <div style="display:flex;flex-wrap:wrap;gap:4px" id="import-campos"></div>
+              </div>
+              <div style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end">
+                <button class="btn" onclick="hideImportModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="simulateImport()">Simular importação →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MANUTENÇÃO -->
+      <div id="screen-manutencao" class="screen">
+        <div class="filter-row" id="os-filters">
+          <div class="filter-chip active" onclick="filterOS('Todos',this)">Todos (47)</div>
+          <div class="filter-chip" onclick="filterOS('Aberto',this)">Aberto (28)</div>
+          <div class="filter-chip" onclick="filterOS('Em andamento',this)">Em andamento (11)</div>
+          <div class="filter-chip" onclick="filterOS('Concluído',this)">Concluído (8)</div>
+          <div class="filter-chip" style="border-color:#EEB0AE;color:var(--g-danger)" onclick="filterOS('Crítico',this)">⚠ Crítico (5)</div>
+        </div>
+        <div class="card" id="os-list"></div>
+      </div>
+
+      <!-- RASTREAMENTO -->
+      <div id="screen-rastreamento" class="screen">
+        <div class="map-placeholder">
+          <div class="map-grid-line" style="top:33%;left:0;right:0;height:1px"></div>
+          <div class="map-grid-line" style="top:66%;left:0;right:0;height:1px"></div>
+          <div class="map-grid-line" style="left:25%;top:0;bottom:0;width:1px"></div>
+          <div class="map-grid-line" style="left:50%;top:0;bottom:0;width:1px"></div>
+          <div class="map-grid-line" style="left:75%;top:0;bottom:0;width:1px"></div>
+          <div class="map-dot" style="top:25%;left:20%"></div><div class="map-label" style="top:21%;left:22%">Matriz — Bauru</div>
+          <div class="map-dot purple" style="top:52%;left:46%"></div><div class="map-label" style="top:48%;left:48%">TK4 CEMIG</div>
+          <div class="map-dot purple" style="top:68%;left:68%"></div><div class="map-label" style="top:64%;left:70%">TK5 CEMIG</div>
+          <div class="map-dot danger" style="top:36%;left:72%"></div><div class="map-label" style="top:32%;left:74%;color:var(--g-danger)">Pós Venda (3)</div>
+          <div style="position:absolute;bottom:8px;right:12px;font-size:10px;color:var(--g-hint)">Mapa de localizações</div>
+        </div>
+        <div class="rastr-grid" id="rastr-grid"></div>
+      </div>
+
+      <!-- RELATÓRIOS -->
+      <div id="screen-relatorios" class="screen">
+        <div class="rel-grid">
+          <div class="rel-card orange"><div class="rel-num">R$ 84.320</div><div class="rel-label">Custo de manutenção — abr/2026</div></div>
+          <div class="rel-card"><div class="rel-num">94,2%</div><div class="rel-label">Disponibilidade média — ativos críticos</div></div>
+          <div class="rel-card orange"><div class="rel-num">23</div><div class="rel-label">Ativos com garantia vencendo em 30 dias</div></div>
+          <div class="rel-card"><div class="rel-num">18</div><div class="rel-label">Manutenções preventivas pendentes</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Relatórios disponíveis</span><button class="btn btn-primary" style="font-size:11px;padding:5px 10px">Exportar todos</button></div>
+          <table><thead><tr><th>Relatório</th><th style="width:130px">Atualizado</th><th style="width:90px">Formato</th><th style="width:90px">Ação</th></tr></thead>
+          <tbody id="rel-tbody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- CADASTRO -->
+      <div id="screen-cadastro" class="screen">
+        <!-- Stepper -->
+        <div style="display:flex;align-items:center;gap:0;margin-bottom:18px;background:var(--g-surface);border:1px solid var(--g-border);border-radius:10px;padding:12px 20px;overflow:hidden">
+          <div id="step-1" class="step-item active" onclick="goStep(1)">
+            <div class="step-circle">1</div><span class="step-label">Identificação</span>
+          </div>
+          <div class="step-line"></div>
+          <div id="step-2" class="step-item" onclick="goStep(2)">
+            <div class="step-circle">2</div><span class="step-label">Especificações</span>
+          </div>
+          <div class="step-line"></div>
+          <div id="step-3" class="step-item" onclick="goStep(3)">
+            <div class="step-circle">3</div><span class="step-label">Localização</span>
+          </div>
+          <div class="step-line"></div>
+          <div id="step-4" class="step-item" onclick="goStep(4)">
+            <div class="step-circle">4</div><span class="step-label">Documentos</span>
+          </div>
+          <div class="step-line"></div>
+          <div id="step-5" class="step-item" onclick="goStep(5)">
+            <div class="step-circle">5</div><span class="step-label">Revisão</span>
+          </div>
+        </div>
+
+        <!-- PASSO 1: Identificação -->
+        <div id="cad-step-1" class="cad-step">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Identificação do ativo</span>
+              <span style="font-size:11px;color:var(--g-hint)">Passo 1 de 5</span>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">TAG / Código *</label>
+                <div style="display:flex;gap:6px">
+                  <input class="form-input" id="cad-tag" placeholder="ex: EQ-2026-001" style="flex:1">
+                  <button class="btn" style="font-size:11px;padding:6px 10px;white-space:nowrap" onclick="gerarTag()" title="Gerar TAG automaticamente">⚙ Auto</button>
+                </div>
+                <span style="font-size:10px;color:var(--g-hint)">Identificador único. Use o botão Auto para gerar.</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tipo / Categoria *</label>
+                <select class="form-select" id="cad-tipo" onchange="updateStepEspec()">
+                  <option value="">-- Selecione --</option>
+                  <option value="TI">🖥 TI — Tecnologia da Informação</option>
+                  <option value="Industrial">⚙ Industrial / Equipamentos</option>
+                  <option value="Veículos">🚛 Veículos e Frota</option>
+                  <option value="Infraestrutura">🏗 Infraestrutura</option>
+                  <option value="Mobiliário">🪑 Mobiliário e Escritório</option>
+                </select>
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Nome / Descrição *</label>
+                <input class="form-input" id="cad-nome" placeholder="Nome completo e descritivo do ativo">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Fabricante / Marca *</label>
+                <input class="form-input" id="cad-fabricante" placeholder="ex: Siemens, Dell, Toyota">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Modelo</label>
+                <input class="form-input" id="cad-modelo" placeholder="ex: PowerEdge R750, Compressor GA22">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Número de série</label>
+                <input class="form-input" id="cad-serie" placeholder="ex: SN-4839201">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Status operacional *</label>
+                <select class="form-select" id="cad-status">
+                  <option>Ativo</option><option>Inativo</option><option>Em manutenção</option><option>Descartado</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;padding-bottom:4px">
+            <button class="btn" onclick="nav('inventario',null)">Cancelar</button>
+            <button class="btn btn-primary" onclick="goStep(2)">Próximo →</button>
+          </div>
+        </div>
+
+        <!-- PASSO 2: Especificações (dinâmico por tipo) -->
+        <div id="cad-step-2" class="cad-step" style="display:none">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title" id="espec-title">Especificações técnicas</span>
+              <span style="font-size:11px;color:var(--g-hint)">Passo 2 de 5</span>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Data de aquisição *</label>
+                <input class="form-input" type="date" id="cad-dt-aq" value="2026-04-22">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Valor de aquisição (R$) *</label>
+                <input class="form-input" id="cad-valor" placeholder="ex: 15.000,00">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Garantia — início</label>
+                <input class="form-input" type="date" id="cad-gar-ini">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Garantia — fim</label>
+                <input class="form-input" type="date" id="cad-gar-fim">
+              </div>
+              <!-- Campos dinâmicos por tipo -->
+              <div id="campos-dinamicos" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:14px"></div>
+              <div class="form-group full">
+                <label class="form-label">Observações técnicas</label>
+                <textarea class="form-input" id="cad-obs" rows="2" placeholder="Condições, histórico anterior, especificações adicionais..." style="resize:vertical;font-family:inherit"></textarea>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;padding-bottom:4px">
+            <button class="btn" onclick="goStep(1)">← Anterior</button>
+            <button class="btn btn-primary" onclick="goStep(3)">Próximo →</button>
+          </div>
+        </div>
+
+        <!-- PASSO 3: Localização e responsável -->
+        <div id="cad-step-3" class="cad-step" style="display:none">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Localização e responsável</span>
+              <span style="font-size:11px;color:var(--g-hint)">Passo 3 de 5</span>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Unidade / Localização *</label>
+                <select class="form-select" id="cad-loc-select"></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Setor / Área</label>
+                <input class="form-input" id="cad-setor" placeholder="ex: Almoxarifado, Sala de Servidores, Linha 2">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Prédio / Andar</label>
+                <input class="form-input" id="cad-predio" placeholder="ex: Bloco A, Térreo, 2° Andar">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Responsável / Custodiante *</label>
+                <input class="form-input" id="cad-resp" placeholder="Nome do responsável pelo ativo">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Centro de custo</label>
+                <input class="form-input" id="cad-cc" placeholder="ex: CC-0042, TI-INFRA">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Departamento</label>
+                <select class="form-select" id="cad-depto">
+                  <option value="">-- Selecione --</option>
+                  <option>Tecnologia da Informação</option><option>Operações</option><option>Manutenção</option>
+                  <option>Logística</option><option>Administrativo</option><option>Pós-Venda</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;padding-bottom:4px">
+            <button class="btn" onclick="goStep(2)">← Anterior</button>
+            <button class="btn btn-primary" onclick="goStep(4)">Próximo →</button>
+          </div>
+        </div>
+
+        <!-- PASSO 4: Documentos e fotos -->
+        <div id="cad-step-4" class="cad-step" style="display:none">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Documentos e fotos</span>
+              <span style="font-size:11px;color:var(--g-hint)">Passo 4 de 5 — Opcional</span>
+            </div>
+            <div style="padding:16px">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                <div>
+                  <div class="form-label" style="margin-bottom:8px">Foto do ativo</div>
+                  <div style="border:2px dashed var(--g-border2);border-radius:10px;padding:28px 16px;text-align:center;cursor:pointer;transition:.15s" onmouseover="this.style.borderColor='var(--g-orange)'" onmouseout="this.style.borderColor='var(--g-border2)'" onclick="showToast('Selecione uma imagem JPG ou PNG')">
+                    <div style="font-size:28px;margin-bottom:6px">📷</div>
+                    <div style="font-size:12px;color:var(--g-muted)">Clique para enviar foto</div>
+                    <div style="font-size:10px;color:var(--g-hint);margin-top:4px">JPG, PNG — máx. 5MB</div>
+                  </div>
+                </div>
+                <div>
+                  <div class="form-label" style="margin-bottom:8px">Documentos anexos</div>
+                  <div style="border:2px dashed var(--g-border2);border-radius:10px;padding:28px 16px;text-align:center;cursor:pointer;transition:.15s" onmouseover="this.style.borderColor='var(--g-purple)'" onmouseout="this.style.borderColor='var(--g-border2)'" onclick="addDocSimul()">
+                    <div style="font-size:28px;margin-bottom:6px">📎</div>
+                    <div style="font-size:12px;color:var(--g-muted)">Clique para anexar</div>
+                    <div style="font-size:10px;color:var(--g-hint);margin-top:4px">PDF, XML — máx. 10MB</div>
+                  </div>
+                  <div id="docs-list" style="margin-top:8px"></div>
+                </div>
+              </div>
+              <div style="margin-top:14px">
+                <div class="form-label" style="margin-bottom:6px">Etiqueta QR Code</div>
+                <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--g-orange-light);border-radius:8px;border:1px solid var(--g-orange-mid)">
+                  <div style="width:52px;height:52px;background:#fff;border-radius:6px;border:1px solid var(--g-orange-mid);display:flex;align-items:center;justify-content:center">
+                    <svg width="38" height="38" viewBox="0 0 10 10" fill="var(--g-text)">
+                      <rect x="0" y="0" width="4" height="4"/><rect x="1" y="1" width="2" height="2" fill="white"/>
+                      <rect x="6" y="0" width="4" height="4"/><rect x="7" y="1" width="2" height="2" fill="white"/>
+                      <rect x="0" y="6" width="4" height="4"/><rect x="1" y="7" width="2" height="2" fill="white"/>
+                      <rect x="6" y="5" width="1" height="1"/><rect x="8" y="5" width="2" height="1"/>
+                      <rect x="5" y="6" width="2" height="1"/><rect x="8" y="7" width="2" height="1"/>
+                      <rect x="5" y="8" width="1" height="2"/><rect x="7" y="8" width="1" height="2"/>
+                    </svg>
+                  </div>
+                  <div style="flex:1">
+                    <div style="font-size:12px;font-weight:600;color:var(--g-orange)">Etiqueta QR Code será gerada automaticamente</div>
+                    <div style="font-size:11px;color:var(--g-muted);margin-top:2px">Após salvar, você poderá imprimir a etiqueta para fixar no ativo físico.</div>
+                  </div>
+                  <button class="btn" style="font-size:11px;padding:5px 10px;border-color:var(--g-orange);color:var(--g-orange)">🖨 Pré-visualizar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;padding-bottom:4px">
+            <button class="btn" onclick="goStep(3)">← Anterior</button>
+            <button class="btn btn-primary" onclick="goStep(5)">Próximo →</button>
+          </div>
+        </div>
+
+        <!-- PASSO 5: Revisão e confirmação -->
+        <div id="cad-step-5" class="cad-step" style="display:none">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Revisão — confirme os dados</span>
+              <span style="font-size:11px;color:var(--g-hint)">Passo 5 de 5</span>
+            </div>
+            <div id="revisao-body" style="padding:16px"></div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;padding-bottom:4px">
+            <button class="btn" onclick="goStep(4)">← Anterior</button>
+            <button class="btn" onclick="nav('inventario',null)">Cancelar</button>
+            <button class="btn btn-primary" onclick="salvarAtivo()">✓ Salvar ativo</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOCALIZAÇÕES -->
+      <div id="screen-localizacoes" class="screen">
+        <div class="section-tag">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="7" r="2.5"/><path d="M8 1C4.7 1 2 3.7 2 7c0 5 6 8 6 8s6-3 6-8c0-3.3-2.7-6-6-6z"/></svg>
+          Gerenciamento de Localizações
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Localizações cadastradas</span>
+            <button class="btn btn-primary" style="font-size:12px" onclick="toggleAddLoc()">+ Nova localização</button>
+          </div>
+          <div id="add-loc-form" class="add-loc-form">
+            <div style="flex:1">
+              <label class="form-label" style="display:block;margin-bottom:5px">Nome da localização *</label>
+              <input class="form-input" id="new-loc-input" placeholder="ex: TK6 CEMIG, Filial Campinas..." style="width:100%">
+            </div>
+            <div style="min-width:120px">
+              <label class="form-label" style="display:block;margin-bottom:5px">Tipo</label>
+              <select class="form-select" id="new-loc-tipo" style="width:100%">
+                <option>Sede / Matriz</option>
+                <option>Obra / Campo</option>
+                <option>Filial</option>
+                <option>Pós Venda</option>
+                <option>Outro</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:6px;align-items:flex-end;padding-bottom:1px">
+              <button class="btn btn-primary" onclick="addLoc()">Salvar</button>
+              <button class="btn" onclick="toggleAddLoc()">Cancelar</button>
+            </div>
+          </div>
+          <div id="loc-list"></div>
+        </div>
+        <div style="margin-top:4px;padding:10px 14px;background:var(--g-orange-light);border-radius:8px;font-size:12px;color:var(--g-orange);border:1px solid var(--g-orange-mid)">
+          💡 <strong>Dica:</strong> As localizações cadastradas aqui ficam disponíveis para seleção no cadastro de ativos e nos filtros de inventário.
+        </div>
+      </div>
+
+      <!-- CONFIGURAÇÕES -->
+      <div id="screen-configuracoes" class="screen">
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-header"><span class="card-title">Perfis de acesso</span><button class="btn btn-purple" style="font-size:11px;padding:5px 10px">+ Novo perfil</button></div>
+          <table>
+            <thead><tr><th>Perfil</th><th>Usuários</th><th>Inventário</th><th>Manutenção</th><th>Relatórios</th><th>Admin</th></tr></thead>
+            <tbody>
+              <tr><td style="font-weight:600;color:var(--g-orange)">Administrador</td><td>3</td><td><span class="badge badge-success">Total</span></td><td><span class="badge badge-success">Total</span></td><td><span class="badge badge-success">Total</span></td><td><span class="badge badge-success">Sim</span></td></tr>
+              <tr><td style="font-weight:500">Gestor de ativos</td><td>8</td><td><span class="badge badge-success">Total</span></td><td><span class="badge badge-purple">Aprovação</span></td><td><span class="badge badge-success">Total</span></td><td><span class="badge badge-neutral">Não</span></td></tr>
+              <tr><td style="font-weight:500">Técnico</td><td>22</td><td><span class="badge badge-info">Leitura</span></td><td><span class="badge badge-success">Execução</span></td><td><span class="badge badge-info">Leitura</span></td><td><span class="badge badge-neutral">Não</span></td></tr>
+              <tr><td style="font-weight:500">Operador</td><td>41</td><td><span class="badge badge-info">Leitura</span></td><td><span class="badge badge-warning">Abertura</span></td><td><span class="badge badge-neutral">Não</span></td><td><span class="badge badge-neutral">Não</span></td></tr>
+              <tr><td style="font-weight:500">Auditor</td><td>5</td><td><span class="badge badge-info">Leitura</span></td><td><span class="badge badge-info">Leitura</span></td><td><span class="badge badge-success">Total</span></td><td><span class="badge badge-neutral">Não</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Integrações</span></div>
+          <table>
+            <thead><tr><th>Sistema</th><th style="width:120px">Status</th><th style="width:130px">Última sync</th><th style="width:90px">Ação</th></tr></thead>
+            <tbody>
+              <tr><td>ERP — SAP S/4HANA</td><td><span class="badge badge-success">Conectado</span></td><td style="color:var(--g-muted)">Hoje, 08:14</td><td><span class="clickable">Configurar →</span></td></tr>
+              <tr><td>Active Directory / LDAP</td><td><span class="badge badge-success">Conectado</span></td><td style="color:var(--g-muted)">Hoje, 06:00</td><td><span class="clickable">Configurar →</span></td></tr>
+              <tr><td>Power BI</td><td><span class="badge badge-warning">Pendente</span></td><td style="color:var(--g-hint)">—</td><td><span class="clickable">Configurar →</span></td></tr>
+              <tr><td>IoT / MQTT broker</td><td><span class="badge badge-neutral">Não config.</span></td><td style="color:var(--g-hint)">—</td><td><span class="clickable">Configurar →</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// ── Estado global ──
+let localizacoes = [
+  {id:1, nome:'Matriz — Bauru',  tipo:'Sede / Matriz', ativos:312, padrao:true},
+  {id:2, nome:'TK4 CEMIG',       tipo:'Obra / Campo',  ativos:94,  padrao:true},
+  {id:3, nome:'TK5 CEMIG',       tipo:'Obra / Campo',  ativos:87,  padrao:true},
+  {id:4, nome:'Pós Venda',       tipo:'Pós Venda',     ativos:154, padrao:true},
+];
+let nextLocId = 5;
+let currentPage = 1;
+let viewMode = 'table'; // 'table' | 'cards'
+let filteredAtivos = [];
+let selectedRows = new Set();
+
+// ── Dados de ativos (expandido) ──
+const ativos=[
+  {tag:'TI-001',nome:'Servidor Dell PowerEdge R750',cat:'TI',loc:'Matriz — Bauru',status:'Ativo',resp:'João M.',serie:'SN-DEL00112',fab:'Dell',garantia:'12/2027',valor:'R$ 48.000'},
+  {tag:'TI-002',nome:'Switch Cisco Catalyst 2960',cat:'TI',loc:'Matriz — Bauru',status:'Ativo',resp:'João M.',serie:'FOC2248X1AB',fab:'Cisco',garantia:'06/2026',valor:'R$ 8.500'},
+  {tag:'TI-003',nome:'Notebook Dell Latitude 5540',cat:'TI',loc:'Pós Venda',status:'Inativo',resp:'Fátima O.',serie:'SN-NBTK047',fab:'Dell',garantia:'—',valor:'R$ 4.200'},
+  {tag:'TI-004',nome:'Storage NetApp AFF A250',cat:'TI',loc:'Matriz — Bauru',status:'Ativo',resp:'João M.',serie:'NTA2250-09',fab:'NetApp',garantia:'03/2028',valor:'R$ 120.000'},
+  {tag:'IND-023',nome:'Compressor Atlas Copco GA22',cat:'Industrial',loc:'TK4 CEMIG',status:'Em manutenção',resp:'Paulo R.',serie:'ATC-GA2289',fab:'Atlas Copco',garantia:'—',valor:'R$ 32.000'},
+  {tag:'IND-047',nome:'Torno CNC Romi Galaxy 15M',cat:'Industrial',loc:'TK5 CEMIG',status:'Ativo',resp:'Paulo R.',serie:'ROMI-G15M-022',fab:'Romi',garantia:'08/2027',valor:'R$ 185.000'},
+  {tag:'IND-055',nome:'Gerador Cummins 150kVA',cat:'Industrial',loc:'TK4 CEMIG',status:'Ativo',resp:'Paulo R.',serie:'CUM150K-88',fab:'Cummins',garantia:'01/2026',valor:'R$ 95.000'},
+  {tag:'VEI-004',nome:'Empilhadeira Toyota 7FBH25',cat:'Veículos',loc:'Matriz — Bauru',status:'Ativo',resp:'Carlos S.',serie:'TOY7FBH-044',fab:'Toyota',garantia:'05/2027',valor:'R$ 78.000'},
+  {tag:'VEI-009',nome:'Caminhão Mercedes-Benz Atego',cat:'Veículos',loc:'Pós Venda',status:'Em manutenção',resp:'Carlos S.',serie:'MB-ATG-2019-001',fab:'Mercedes-Benz',garantia:'—',valor:'R$ 260.000'},
+  {tag:'VEI-012',nome:'Van Sprinter 416 CDI',cat:'Veículos',loc:'Pós Venda',status:'Ativo',resp:'Carlos S.',serie:'VAN-SPR-2022',fab:'Mercedes-Benz',garantia:'09/2026',valor:'R$ 145.000'},
+  {tag:'INF-012',nome:'No-break APC Smart UPS 20kVA',cat:'Infraestrutura',loc:'Matriz — Bauru',status:'Ativo',resp:'Ana L.',serie:'APC20K-PRO-7',fab:'APC',garantia:'05/2026',valor:'R$ 22.000'},
+  {tag:'INF-019',nome:'Ar-condicionado Carrier 60kBTU',cat:'Infraestrutura',loc:'TK5 CEMIG',status:'Ativo',resp:'Ana L.',serie:'CAR60K-2023-4',fab:'Carrier',garantia:'11/2026',valor:'R$ 18.000'},
+  {tag:'INF-030',nome:'CFTV Sistema 32 câmeras',cat:'Infraestrutura',loc:'Matriz — Bauru',status:'Ativo',resp:'João M.',serie:'CFTV-32CH-001',fab:'Intelbras',garantia:'07/2027',valor:'R$ 35.000'},
+  {tag:'MOB-001',nome:'Mesa Diretoria c/ Painel',cat:'Mobiliário',loc:'Matriz — Bauru',status:'Ativo',resp:'Ana L.',serie:'—',fab:'Neumóvel',garantia:'—',valor:'R$ 3.800'},
+  {tag:'MOB-015',nome:'Cadeiras Ergonômicas (lote 10)',cat:'Mobiliário',loc:'Matriz — Bauru',status:'Ativo',resp:'Ana L.',serie:'—',fab:'Netsit',garantia:'—',valor:'R$ 8.900'},
+];
+
+// ── LOCALIZAÇÕES ──
+function renderLocList(){
+  document.getElementById('loc-list').innerHTML = localizacoes.map(l=>`
+    <div class="loc-item">
+      <div>
+        <div class="loc-name">${l.nome}</div>
+        <div class="loc-count"><span class="badge badge-orange" style="font-size:9px;margin-right:6px">${l.tipo}</span>${l.ativos} ativos vinculados</div>
+      </div>
+      <div class="loc-actions">
+        <button class="loc-btn" onclick="editLoc(${l.id})">✏ Editar</button>
+        ${l.padrao?`<button class="loc-btn" style="cursor:not-allowed;opacity:.4" title="Localização padrão">🔒</button>`:`<button class="loc-btn danger" onclick="removeLoc(${l.id})">✕ Remover</button>`}
+      </div>
+    </div>`).join('');
+  updateLocSelects();
+  renderLocProgress();
+}
+function updateLocSelects(){
+  const opts = localizacoes.map(l=>`<option>${l.nome}</option>`).join('');
+  const inv = document.getElementById('inv-filter-loc');
+  const cad = document.getElementById('cad-loc-select');
+  if(inv) inv.innerHTML = '<option value="">Todas localizações</option>' + opts;
+  if(cad) cad.innerHTML = opts;
+}
+function renderLocProgress(){
+  const el = document.getElementById('loc-progress');
+  if(!el) return;
+  const max = Math.max(...localizacoes.map(l=>l.ativos));
+  el.innerHTML = localizacoes.map(l=>`
+    <div class="progress-row">
+      <span class="progress-name">${l.nome}</span>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${Math.round(l.ativos/max*100)}%"></div></div>
+      <span class="progress-val">${l.ativos}</span>
+    </div>`).join('');
+}
+function toggleAddLoc(){
+  const f = document.getElementById('add-loc-form');
+  f.classList.toggle('open');
+  if(f.classList.contains('open')) document.getElementById('new-loc-input').focus();
+}
+function addLoc(){
+  const inp = document.getElementById('new-loc-input');
+  const tipo = document.getElementById('new-loc-tipo').value;
+  const nome = inp.value.trim();
+  if(!nome){ inp.focus(); inp.style.borderColor='var(--g-danger)'; return; }
+  inp.style.borderColor='';
+  localizacoes.push({id:nextLocId++, nome, tipo, ativos:0, padrao:false});
+  inp.value=''; toggleAddLoc(); renderLocList();
+  showToast('Localização "'+nome+'" adicionada com sucesso!');
+}
+function removeLoc(id){
+  localizacoes = localizacoes.filter(l=>l.id!==id);
+  renderLocList();
+}
+function editLoc(id){
+  const loc = localizacoes.find(l=>l.id===id);
+  const novo = prompt('Novo nome para "'+loc.nome+'":', loc.nome);
+  if(novo && novo.trim()){ loc.nome = novo.trim(); renderLocList(); }
+}
+
+// ── NAVEGAÇÃO ──
+const pages={dashboard:'Dashboard',inventario:'Inventário de ativos',manutencao:'Ordens de serviço',rastreamento:'Rastreamento',relatorios:'Relatórios',cadastro:'Novo ativo',localizacoes:'Localizações',configuracoes:'Configurações'};
+const btnLabels={dashboard:'+ Novo ativo',inventario:'+ Cadastrar ativo',manutencao:'+ Nova OS',rastreamento:'Exportar mapa',relatorios:'Exportar tudo',cadastro:'',localizacoes:'+ Nova localização',configuracoes:'+ Novo usuário'};
+function nav(id,el){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  if(el) el.classList.add('active');
+  else {
+    document.querySelectorAll('.nav-item').forEach(n=>{
+      if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'")) n.classList.add('active');
+    });
+  }
+  document.getElementById('page-title').textContent = pages[id]||id;
+  const ab = document.getElementById('action-btn');
+  ab.textContent = btnLabels[id]||'+ Novo';
+  ab.style.display = btnLabels[id]==='' ? 'none' : '';
+  if(id==='inventario'){ currentPage=1; filterTable(); }
+  if(id==='manutencao') renderOS('Todos');
+  if(id==='rastreamento') renderRastr();
+  if(id==='relatorios') renderRel();
+  if(id==='localizacoes') renderLocList();
+  if(id==='cadastro') initCadastro();
+}
+function actionBtn(){
+  const pg = document.getElementById('page-title').textContent;
+  if(pg==='Dashboard'||pg==='Inventário de ativos') nav('cadastro',null);
+  else if(pg==='Localizações'){ toggleAddLoc(); }
+}
+
+// ── INVENTÁRIO ──
+function statusBadge(s){const m={Ativo:'success','Em manutenção':'warning',Inativo:'neutral',Descartado:'danger'};return`<span class="badge badge-${m[s]||'neutral'}">${s}</span>`;}
+function catBadge(c){return`<span class="badge cat-${c.replace('/','')}" style="font-size:10px">${c}</span>`;}
+function garantiaBadge(g){
+  if(!g||g==='—') return `<span style="font-size:11px;color:var(--g-hint)">—</span>`;
+  const [m,y]=g.split('/'); const dt=new Date(y,m-1);
+  const diff=Math.round((dt-new Date())/(1000*60*60*24));
+  if(diff<0) return `<span style="font-size:10px;color:var(--g-danger);font-weight:600">Vencida</span>`;
+  if(diff<60) return `<span style="font-size:10px;color:var(--g-warn);font-weight:600">${g} ⚠</span>`;
+  return `<span style="font-size:10px;color:var(--g-success)">${g}</span>`;
+}
+
+function renderInvMetrics(data){
+  const total=data.length;
+  const atv=data.filter(a=>a.status==='Ativo').length;
+  const man=data.filter(a=>a.status==='Em manutenção').length;
+  const inat=data.filter(a=>a.status==='Inativo').length;
+  const garVenc=data.filter(a=>{
+    if(!a.garantia||a.garantia==='—') return false;
+    const [m,y]=a.garantia.split('/');
+    return Math.round((new Date(y,m-1)-new Date())/(1000*60*60*24))<60;
+  }).length;
+  document.getElementById('inv-metrics').innerHTML=`
+    <div class="inv-metric"><div style="font-size:10px;color:var(--g-muted);margin-bottom:4px">Total filtrado</div><div style="font-size:20px;font-weight:700">${total}</div></div>
+    <div class="inv-metric" style="border-top-color:var(--g-success)"><div style="font-size:10px;color:var(--g-muted);margin-bottom:4px">Operacionais</div><div style="font-size:20px;font-weight:700;color:var(--g-success)">${atv}</div></div>
+    <div class="inv-metric warn"><div style="font-size:10px;color:var(--g-muted);margin-bottom:4px">Em manutenção</div><div style="font-size:20px;font-weight:700;color:var(--g-warn)">${man}</div></div>
+    <div class="inv-metric neutral"><div style="font-size:10px;color:var(--g-muted);margin-bottom:4px">Inativos</div><div style="font-size:20px;font-weight:700;color:var(--g-muted)">${inat}</div></div>
+    <div class="inv-metric danger"><div style="font-size:10px;color:var(--g-muted);margin-bottom:4px">Garantia expirando</div><div style="font-size:20px;font-weight:700;color:var(--g-danger)">${garVenc}</div></div>
+  `;
+}
+
+function renderInv(){
+  const perPage = parseInt(document.getElementById('per-page')?.value||'20');
+  const total = filteredAtivos.length;
+  const totalPages = Math.max(1,Math.ceil(total/perPage));
+  if(currentPage>totalPages) currentPage=totalPages;
+  const start=(currentPage-1)*perPage;
+  const rows=filteredAtivos.slice(start,start+perPage);
+
+  document.getElementById('inv-count').textContent=total+' ativo'+(total!==1?'s':'');
+  document.getElementById('inv-page-info').textContent=`Pág. ${currentPage}/${totalPages}`;
+
+  // Tabela
+  document.getElementById('inv-tbody').innerHTML=rows.map(a=>`<tr>
+    <td style="padding:9px 8px 9px 14px"><input type="checkbox" class="row-sel" data-tag="${a.tag}" onchange="updateSel()" style="cursor:pointer" ${selectedRows.has(a.tag)?'checked':''}></td>
+    <td style="font-family:monospace;font-size:11px;font-weight:700;color:var(--g-orange)">${a.tag}</td>
+    <td><span style="font-weight:500;font-size:12px">${a.nome}</span><br><span style="font-size:10px;color:var(--g-hint)">${a.fab}</span></td>
+    <td>${catBadge(a.cat)}</td>
+    <td style="color:var(--g-muted);font-size:11px">${a.loc}</td>
+    <td>${statusBadge(a.status)}</td>
+    <td style="color:var(--g-muted);font-size:11px">${a.resp}</td>
+    <td>${garantiaBadge(a.garantia)}</td>
+    <td><span class="clickable" onclick="openDrawer('${a.tag}')">Ver →</span></td>
+  </tr>`).join('');
+
+  // Cards
+  document.getElementById('inv-count-card').textContent=total+' ativos';
+  document.getElementById('inv-cards-grid').innerHTML=rows.map(a=>`
+    <div class="ativo-card" onclick="openDrawer('${a.tag}')">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
+        <span style="font-family:monospace;font-size:11px;font-weight:700;color:var(--g-orange)">${a.tag}</span>
+        ${statusBadge(a.status)}
+      </div>
+      <div style="font-size:13px;font-weight:600;color:var(--g-text);margin-bottom:2px">${a.nome}</div>
+      <div style="font-size:11px;color:var(--g-muted);margin-bottom:8px">${a.fab} · ${a.loc}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        ${catBadge(a.cat)}
+        <span style="font-size:10px;color:var(--g-hint)">${a.resp}</span>
+      </div>
+    </div>`).join('');
+
+  // Paginação
+  renderPagination(totalPages);
+  renderInvMetrics(filteredAtivos);
+  updateLocSelects();
+}
+
+function renderPagination(totalPages){
+  const mkBtn=(pg,label,active)=>`<button class="pag-btn${active?' active':''}" onclick="goPage(${pg})">${label||pg}</button>`;
+  let html='';
+  html+=`<button class="pag-btn" onclick="goPage(${currentPage-1})" ${currentPage<=1?'disabled':''}>‹</button>`;
+  for(let i=1;i<=totalPages;i++){
+    if(totalPages<=7||i===1||i===totalPages||Math.abs(i-currentPage)<=1){
+      html+=mkBtn(i,i,i===currentPage);
+    } else if(Math.abs(i-currentPage)===2){
+      html+=`<span style="padding:4px 2px;font-size:11px;color:var(--g-hint)">…</span>`;
+    }
+  }
+  html+=`<button class="pag-btn" onclick="goPage(${currentPage+1})" ${currentPage>=totalPages?'disabled':''}>›</button>`;
+  document.getElementById('pag-btns').innerHTML=html;
+  document.getElementById('pag-btns-card').innerHTML=html.replace(/pag-btns/g,'pag-btns-card');
+}
+function goPage(p){
+  const perPage=parseInt(document.getElementById('per-page')?.value||'20');
+  const total=Math.max(1,Math.ceil(filteredAtivos.length/perPage));
+  currentPage=Math.max(1,Math.min(p,total));
+  renderInv();
+}
+
+function filterTable(){
+  const q=(document.getElementById('inv-search')?.value||'').toLowerCase();
+  const cat=document.getElementById('inv-filter-cat')?.value||'';
+  const loc=document.getElementById('inv-filter-loc')?.value||'';
+  const st=document.getElementById('inv-filter-status')?.value||'';
+  filteredAtivos=ativos.filter(a=>
+    (!q||(a.tag+a.nome+a.cat+a.loc+a.fab+a.resp+a.serie).toLowerCase().includes(q))&&
+    (!cat||a.cat===cat)&&(!loc||a.loc===loc)&&(!st||a.status===st)
+  );
+  currentPage=1;
+  renderInv();
+}
+
+// Seleção de linhas
+function toggleSelAll(cb){
+  document.querySelectorAll('.row-sel').forEach(r=>{
+    r.checked=cb.checked;
+    if(cb.checked) selectedRows.add(r.dataset.tag);
+    else selectedRows.delete(r.dataset.tag);
+  });
+  updateBulkBar();
+}
+function updateSel(){
+  document.querySelectorAll('.row-sel').forEach(r=>{
+    if(r.checked) selectedRows.add(r.dataset.tag);
+    else selectedRows.delete(r.dataset.tag);
+  });
+  updateBulkBar();
+}
+function updateBulkBar(){
+  const bar=document.getElementById('bulk-bar');
+  const count=selectedRows.size;
+  if(count>0){bar.style.display='flex';document.getElementById('bulk-count').textContent=count+' selecionado'+(count>1?'s':'');}
+  else bar.style.display='none';
+}
+function clearSel(){selectedRows.clear();document.querySelectorAll('.row-sel').forEach(r=>r.checked=false);const a=document.getElementById('sel-all');if(a)a.checked=false;updateBulkBar();}
+function bulkAction(type){
+  const n=selectedRows.size;
+  const msgs={transferir:`${n} ativo(s) transferido(s) de localização`,status:`Status de ${n} ativo(s) atualizado`,descartar:`${n} ativo(s) marcado(s) como Descartado`};
+  showToast(msgs[type]);
+  clearSel();
+}
+
+// Drawer de detalhe
+function openDrawer(tag){
+  const a=ativos.find(x=>x.tag===tag);
+  if(!a) return;
+  document.getElementById('drawer-title').textContent=a.tag+' — '+a.nome.substring(0,28)+'...';
+  document.getElementById('drawer-body').innerHTML=`
+    <div style="background:var(--g-orange-light);border-radius:8px;padding:12px;margin-bottom:14px;border:1px solid var(--g-orange-mid)">
+      <div style="font-size:11px;color:var(--g-hint);margin-bottom:2px">TAG / Identificador</div>
+      <div style="font-size:18px;font-weight:800;color:var(--g-orange);font-family:monospace">${a.tag}</div>
+    </div>
+    <div style="margin-bottom:12px">${statusBadge(a.status)} ${catBadge(a.cat)}</div>
+    <div class="rev-title">Identificação</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div><div class="rev-lbl">Nome</div><div style="font-size:12px;font-weight:600">${a.nome}</div></div>
+      <div><div class="rev-lbl">Fabricante</div><div style="font-size:12px">${a.fab}</div></div>
+      <div><div class="rev-lbl">Número de série</div><div style="font-size:12px;font-family:monospace">${a.serie}</div></div>
+      <div><div class="rev-lbl">Valor de aquisição</div><div style="font-size:12px;font-weight:600;color:var(--g-text)">${a.valor}</div></div>
+    </div>
+    <div class="rev-title">Localização</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div><div class="rev-lbl">Unidade</div><div style="font-size:12px">${a.loc}</div></div>
+      <div><div class="rev-lbl">Responsável</div><div style="font-size:12px">${a.resp}</div></div>
+    </div>
+    <div class="rev-title">Garantia</div>
+    <div style="margin-bottom:16px">${garantiaBadge(a.garantia)} <span style="font-size:11px;color:var(--g-muted);margin-left:6px">${a.garantia!=='—'?'vencimento':'sem garantia'}</span></div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <button class="btn btn-primary" style="font-size:12px;width:100%" onclick="nav('manutencao',null);closeDrawer()">🔧 Abrir OS de manutenção</button>
+      <button class="btn" style="font-size:12px;width:100%" onclick="showToast('Gerando etiqueta QR Code...')">🏷 Imprimir etiqueta</button>
+      <button class="btn" style="font-size:12px;width:100%" onclick="showToast('Ativo copiado para edição')">✏ Editar ativo</button>
+    </div>
+  `;
+  document.getElementById('ativo-drawer').style.display='block';
+}
+function closeDrawer(){ document.getElementById('ativo-drawer').style.display='none'; }
+
+// Toggle view
+function toggleView(){
+  const tv=document.getElementById('inv-table-view');
+  const cv=document.getElementById('inv-cards-view');
+  const btn=document.getElementById('view-toggle');
+  if(viewMode==='table'){viewMode='cards';tv.style.display='none';cv.style.display='block';btn.textContent='☰ Tabela';}
+  else{viewMode='table';tv.style.display='block';cv.style.display='none';btn.textContent='⊞ Cards';}
+}
+
+// Importação
+function showImportModal(){
+  const modal=document.getElementById('import-modal');
+  modal.style.display='flex';
+  const campos=['TAG','Nome','Categoria','Fabricante','Modelo','N° Série','Localização','Responsável','Status','Dt. Aquisição','Valor'];
+  document.getElementById('import-campos').innerHTML=campos.map(f=>`<span style="padding:2px 7px;background:var(--g-surface2);border-radius:4px;font-size:10px;color:var(--g-muted)">${f}</span>`).join('');
+}
+function hideImportModal(){ document.getElementById('import-modal').style.display='none'; }
+function simulateImport(){
+  hideImportModal();
+  showToast('Simulação: 24 registros válidos, 2 com erro. Confirme para importar.');
+}
+
+// ── OS ──
+const osList=[
+  {num:'OS-2847',tipo:'Preventiva',ativo:'Compressor Atlas Copco',loc:'TK4 CEMIG',prior:'Alta',status:'Em andamento',resp:'Paulo R.',data:'21/04/2026',desc:'Troca de filtros e verificação de válvulas — plano semestral'},
+  {num:'OS-2846',tipo:'Corretiva',ativo:'Caminhão Mercedes-Benz',loc:'Pós Venda',prior:'Crítica',status:'Aberto',resp:'Carlos S.',data:'20/04/2026',desc:'Motor superaquecendo — identificar causa raiz'},
+  {num:'OS-2845',tipo:'Preventiva',ativo:'No-break APC 20kVA',loc:'Matriz — Bauru',prior:'Média',status:'Aberto',resp:'Ana L.',data:'20/04/2026',desc:'Inspeção das baterias e teste de autonomia'},
+  {num:'OS-2844',tipo:'Corretiva',ativo:'Torno CNC Romi',loc:'TK5 CEMIG',prior:'Alta',status:'Concluído',resp:'Paulo R.',data:'19/04/2026',desc:'Substituição do eixo X danificado — concluído em 4h'},
+  {num:'OS-2843',tipo:'Preventiva',ativo:'Servidor Dell PowerEdge',loc:'Matriz — Bauru',prior:'Baixa',status:'Aberto',resp:'João M.',data:'19/04/2026',desc:'Limpeza interna e verificação de temperatura'},
+  {num:'OS-2842',tipo:'Corretiva',ativo:'Empilhadeira Toyota',loc:'Matriz — Bauru',prior:'Crítica',status:'Em andamento',resp:'Carlos S.',data:'18/04/2026',desc:'Falha no sistema hidráulico — aguardando peça'},
+];
+function priorBadge(p){const m={Crítica:'danger',Alta:'warning',Média:'info',Baixa:'neutral'};return`<span class="badge badge-${m[p]||'neutral'}">${p}</span>`;}
+function stBadge(s){const m={Aberto:'info','Em andamento':'warning',Concluído:'success'};return`<span class="badge badge-${m[s]||'neutral'}">${s}</span>`;}
+function renderOS(filter){
+  const lista=filter==='Todos'?osList:filter==='Crítico'?osList.filter(o=>o.prior==='Crítica'):osList.filter(o=>o.status===filter);
+  document.getElementById('os-list').innerHTML=lista.map((o,i)=>`
+    <div class="os-header" onclick="toggleOS(${i})">
+      <span class="os-num">${o.num}</span>${priorBadge(o.prior)}
+      <span class="os-desc">${o.ativo} <span style="color:var(--g-hint);font-size:11px">(${o.loc})</span> — ${o.desc.substring(0,45)}...</span>
+      ${stBadge(o.status)}<span id="exp-${i}" style="font-size:11px;color:var(--g-hint)">▸</span>
+    </div>
+    <div class="os-detail" id="det-${i}">
+      <div><div class="os-field">Tipo</div><div class="os-val">${o.tipo}</div></div>
+      <div><div class="os-field">Localização</div><div class="os-val">${o.loc}</div></div>
+      <div><div class="os-field">Responsável</div><div class="os-val">${o.resp}</div></div>
+      <div><div class="os-field">Data abertura</div><div class="os-val">${o.data}</div></div>
+      <div style="grid-column:1/-1"><div class="os-field">Descrição</div><div class="os-val">${o.desc}</div></div>
+    </div>`).join('');
+}
+function toggleOS(i){const d=document.getElementById('det-'+i);const e=document.getElementById('exp-'+i);e.textContent=d.classList.toggle('open')?'▾':'▸';}
+function filterOS(f,el){document.querySelectorAll('#os-filters .filter-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');renderOS(f);}
+
+// ── RASTREAMENTO ──
+function renderRastr(){
+  const rastivos=[
+    {tag:'IND-023',nome:'Compressor Atlas Copco GA22',loc:'TK4 CEMIG',status:'Em manutenção',ultima:'20/04 14:32'},
+    {tag:'VEI-004',nome:'Empilhadeira Toyota 7FBH25',loc:'Matriz — Bauru',status:'Ativo',ultima:'21/04 09:15'},
+    {tag:'VEI-009',nome:'Caminhão Mercedes-Benz Atego',loc:'Pós Venda',status:'Em manutenção',ultima:'20/04 08:00'},
+    {tag:'TI-001',nome:'Servidor Dell PowerEdge R750',loc:'Matriz — Bauru',status:'Ativo',ultima:'22/04 08:00'},
+    {tag:'IND-047',nome:'Torno CNC Romi Galaxy 15M',loc:'TK5 CEMIG',status:'Ativo',ultima:'22/04 10:22'},
+    {tag:'INF-012',nome:'No-break APC Smart UPS',loc:'Matriz — Bauru',status:'Ativo',ultima:'22/04 07:00'},
+  ];
+  document.getElementById('rastr-grid').innerHTML=rastivos.map(a=>`
+    <div class="rastr-card">
+      <div class="rastr-tag">${a.tag}</div>
+      <div class="rastr-name">${a.nome}</div>
+      <div class="rastr-loc">${a.loc}</div>
+      <div class="rastr-footer">${statusBadge(a.status)}<span style="font-size:10px;color:var(--g-hint)">${a.ultima}</span></div>
+    </div>`).join('');
+}
+
+// ── RELATÓRIOS ──
+function renderRel(){
+  const rels=[
+    {nome:'Inventário geral de ativos',atualizado:'Hoje, 08:00',formato:'PDF · XLSX'},
+    {nome:'Histórico de manutenções — abril/2026',atualizado:'Hoje, 07:00',formato:'PDF · XLSX'},
+    {nome:'Custo por ativo — acumulado 2026',atualizado:'Hoje, 07:00',formato:'PDF · XLSX'},
+    {nome:'Ativos com garantia a vencer',atualizado:'Hoje, 06:00',formato:'PDF'},
+    {nome:'Disponibilidade de ativos críticos',atualizado:'Ontem',formato:'PDF · XLSX'},
+    {nome:'Movimentações por localização',atualizado:'Ontem',formato:'XLSX · CSV'},
+    {nome:'Manutenções preventivas pendentes',atualizado:'Ontem',formato:'PDF'},
+  ];
+  document.getElementById('rel-tbody').innerHTML=rels.map(r=>`<tr>
+    <td style="font-weight:500">${r.nome}</td>
+    <td style="color:var(--g-muted);font-size:11px">${r.atualizado}</td>
+    <td style="font-size:11px;color:var(--g-hint)">${r.formato}</td>
+    <td><span class="clickable" onclick="showToast('Gerando relatório...')">Baixar →</span></td>
+  </tr>`).join('');
+}
+
+// ── CADASTRO (stepper) ──
+let cadStep = 1;
+const camposDinamicos = {
+  TI: [{label:'Processador',ph:'ex: Intel Xeon Gold 6226R'},{label:'RAM (GB)',ph:'ex: 64 GB DDR4'},{label:'Armazenamento',ph:'ex: 2x 1.8TB SAS'},{label:'Sistema Operacional',ph:'ex: Windows Server 2022'}],
+  Industrial: [{label:'Potência / Capacidade',ph:'ex: 22 kW, 3000 rpm'},{label:'Tensão de operação',ph:'ex: 380V trifásico'},{label:'Periodicidade PM',ph:'ex: 6 meses'},{label:'Horas de operação',ph:'ex: 4.200 h'}],
+  Veículos: [{label:'Placa',ph:'ex: BRA-0001'},{label:'Chassi',ph:'ex: 9BM...'},{label:'Ano / modelo',ph:'ex: 2022'},{label:'Km atual',ph:'ex: 48.200 km'}],
+  Infraestrutura: [{label:'Potência / Capacidade',ph:'ex: 20 kVA'},{label:'Área / m²',ph:'ex: 40 m²'},{label:'Tensão',ph:'ex: 220V'},{label:'Norma aplicável',ph:'ex: ABNT NBR 5410'}],
+  Mobiliário: [{label:'Dimensões',ph:'ex: 160x80x75 cm'},{label:'Material',ph:'ex: MDF lacado'},{label:'Cor',ph:'ex: Branco'},{label:'Quantidade',ph:'ex: 10 unidades'}],
+};
+function initCadastro(){
+  cadStep=1;
+  document.querySelectorAll('.cad-step').forEach((s,i)=>s.style.display=i===0?'block':'none');
+  document.querySelectorAll('.step-item').forEach((s,i)=>{s.classList.toggle('active',i===0);s.classList.remove('done');});
+  document.querySelectorAll('.step-line').forEach(l=>l.classList.remove('done'));
+  updateLocSelects();
+}
+function goStep(n){
+  if(n<1||n>5) return;
+  document.querySelectorAll('.cad-step').forEach((s,i)=>s.style.display=i===n-1?'block':'none');
+  document.querySelectorAll('.step-item').forEach((s,i)=>{
+    s.classList.toggle('active',i===n-1);
+    s.classList.toggle('done',i<n-1);
+  });
+  document.querySelectorAll('.step-line').forEach((l,i)=>l.classList.toggle('done',i<n-1));
+  cadStep=n;
+  if(n===5) buildRevisao();
+  if(n===2) updateStepEspec();
+}
+function gerarTag(){
+  const tipo = document.getElementById('cad-tipo')?.value;
+  const prefixos={TI:'TI',Industrial:'IND',Veículos:'VEI',Infraestrutura:'INF',Mobiliário:'MOB'};
+  const pref=prefixos[tipo]||'AT';
+  const num=String(ativos.length+1+Math.floor(Math.random()*10)).padStart(3,'0');
+  const tag=pref+'-'+num;
+  document.getElementById('cad-tag').value=tag;
+  showToast('TAG sugerida: '+tag);
+}
+function updateStepEspec(){
+  const tipo=document.getElementById('cad-tipo')?.value;
+  document.getElementById('espec-title').textContent='Especificações — '+( tipo||'Geral');
+  const campos=camposDinamicos[tipo]||[];
+  document.getElementById('campos-dinamicos').innerHTML=campos.map(c=>`
+    <div class="form-group">
+      <label class="form-label">${c.label}</label>
+      <input class="form-input" placeholder="${c.ph}">
+    </div>`).join('');
+}
+function buildRevisao(){
+  const tag=document.getElementById('cad-tag')?.value||'—';
+  const tipo=document.getElementById('cad-tipo')?.value||'—';
+  const nome=document.getElementById('cad-nome')?.value||'—';
+  const fab=document.getElementById('cad-fabricante')?.value||'—';
+  const modelo=document.getElementById('cad-modelo')?.value||'—';
+  const serie=document.getElementById('cad-serie')?.value||'—';
+  const status=document.getElementById('cad-status')?.value||'Ativo';
+  const dtAq=document.getElementById('cad-dt-aq')?.value||'—';
+  const valor=document.getElementById('cad-valor')?.value||'—';
+  const garIni=document.getElementById('cad-gar-ini')?.value||'—';
+  const garFim=document.getElementById('cad-gar-fim')?.value||'—';
+  const locEl=document.getElementById('cad-loc-select');
+  const loc=locEl?locEl.options[locEl.selectedIndex]?.text||'—':'—';
+  const resp=document.getElementById('cad-resp')?.value||'—';
+  document.getElementById('revisao-body').innerHTML=`
+    <div style="background:var(--g-orange-light);border-radius:8px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;border:1px solid var(--g-orange-mid)">
+      <div><div style="font-size:10px;color:var(--g-hint);margin-bottom:2px">TAG / Identificador</div><div style="font-size:18px;font-weight:800;color:var(--g-orange);font-family:monospace">${tag}</div></div>
+      <div>${statusBadge(status)}</div>
+    </div>
+    <div class="rev-group"><div class="rev-title">Identificação</div>
+    <div class="rev-grid">
+      <div><div class="rev-lbl">Nome</div><div class="rev-row">${nome}</div></div>
+      <div><div class="rev-lbl">Tipo</div><div class="rev-row">${tipo}</div></div>
+      <div><div class="rev-lbl">Fabricante</div><div class="rev-row">${fab}</div></div>
+      <div><div class="rev-lbl">Modelo</div><div class="rev-row">${modelo}</div></div>
+      <div><div class="rev-lbl">N° Série</div><div class="rev-row" style="font-family:monospace">${serie}</div></div>
+    </div></div>
+    <div class="rev-group"><div class="rev-title">Financeiro e garantia</div>
+    <div class="rev-grid">
+      <div><div class="rev-lbl">Data aquisição</div><div class="rev-row">${dtAq}</div></div>
+      <div><div class="rev-lbl">Valor</div><div class="rev-row">R$ ${valor}</div></div>
+      <div><div class="rev-lbl">Garantia início</div><div class="rev-row">${garIni}</div></div>
+      <div><div class="rev-lbl">Garantia fim</div><div class="rev-row">${garFim}</div></div>
+    </div></div>
+    <div class="rev-group"><div class="rev-title">Localização e responsável</div>
+    <div class="rev-grid">
+      <div><div class="rev-lbl">Localização</div><div class="rev-row">${loc}</div></div>
+      <div><div class="rev-lbl">Responsável</div><div class="rev-row">${resp}</div></div>
+    </div></div>
+  `;
+}
+function salvarAtivo(){
+  const tag=document.getElementById('cad-tag')?.value||'';
+  if(!tag){ showToast('⚠ Preencha a TAG antes de salvar'); goStep(1); return; }
+  showToast('✓ Ativo '+tag+' cadastrado com sucesso!');
+  setTimeout(()=>nav('inventario',null),600);
+}
+function addDocSimul(){
+  const list=document.getElementById('docs-list');
+  const docs=['NF_compra.pdf','manual_operacao.pdf','certificado_calibracao.xml'];
+  const d=docs[Math.floor(Math.random()*docs.length)];
+  list.innerHTML+=`<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:var(--g-surface2);border-radius:6px;margin-top:5px;font-size:11px"><span>📄 ${d}</span><span style="margin-left:auto;color:var(--g-danger);cursor:pointer" onclick="this.parentNode.remove()">✕</span></div>`;
+}
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg){
+  let t=document.querySelector('.toast');
+  if(!t){t=document.createElement('div');t.className='toast';document.body.appendChild(t);}
+  t.textContent=msg; t.style.opacity='1';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.style.opacity='0',3000);
+}
+
+// ── Gráfico Dashboard ──
+const barVals=[18,24,31,22,38,28,42,35,47,51,44,38];
+const mx=Math.max(...barVals);
+document.getElementById('bar-chart').innerHTML=barVals.map((v,i)=>`<div class="bar${i===10?' hi':''}" title="${v} OS" style="height:${Math.round(v/mx*100)}%"></div>`).join('');
+
+// ── Timeline Dashboard ──
+const eventos=[
+  {dot:'danger',text:'OS-2842: falha hidráulica na Empilhadeira Toyota (Matriz)',time:'Hoje, 11:30'},
+  {dot:'warning',text:'OS-2847: PM iniciada no Compressor Atlas Copco (TK4)',time:'Hoje, 09:00'},
+  {dot:'success',text:'OS-2844: torno CNC reparado e liberado (TK5 CEMIG)',time:'Ontem, 17:45'},
+  {dot:'info',text:'Ativo VEI-009 transferido para Pós Venda',time:'Ontem, 14:20'},
+  {dot:'warning',text:'Garantia do No-break APC vence em 15 dias',time:'Ontem, 08:00'},
+];
+document.getElementById('dash-timeline').innerHTML=eventos.map(e=>`<div class="tl-item"><div class="tl-dot ${e.dot}"></div><div><div class="tl-text">${e.text}</div><div class="tl-time">${e.time}</div></div></div>`).join('');
+
+// ── INIT ──
+filteredAtivos=[...ativos];
+renderLocList();
+renderInv();
+renderOS('Todos');
+renderRastr();
+renderRel();
+</script>
+</html>

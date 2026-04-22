@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/Gali/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/70dd2c42-2929-494b-9a7f-025b0cc5e7a7/04e374d4-de5d-4f41-b4f8-e1947ceed83d/skills/docx/**)",
+      "Bash(extract-text \"C:\\\\Users\\\\Gali\\\\Downloads\\\\Requisitos_Sistema_Gestao_Ativos \\(1\\).docx\")",
+      "Bash(pandoc \"C:\\\\Users\\\\Gali\\\\Downloads\\\\Requisitos_Sistema_Gestao_Ativos \\(1\\).docx\" -t markdown)",
+      "Bash(pandoc \"C:/Users/Gali/Downloads/Requisitos_Sistema_Gestao_Ativos \\(1\\).docx\" -t markdown)",
+      "Bash(python -c ' *)",
+      "Bash(python3 -c ' *)",
+      "Read(//c/Users/Gali/Downloads/**)",
+      "Bash(powershell.exe -Command ' $path = '\\\\''C:\\\\Users\\\\Gali\\\\Downloads\\\\Requisitos_Sistema_Gestao_Ativos \\(1\\).docx'\\\\'' Add-Type -AssemblyName WindowsBase $pkg = [System.IO.Packaging.Package]::Open\\($path, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read\\) $part = $pkg.GetPart\\([uri]'\\\\''/word/document.xml'\\\\''\\) $reader = New-Object System.IO.StreamReader\\($part.GetStream\\(\\)\\) $xml = [xml]$reader.ReadToEnd\\(\\) $reader.Close\\(\\) $pkg.Close\\(\\) $ns = New-Object System.Xml.XmlNamespaceManager\\($xml.NameTable\\) $ns.AddNamespace\\('\\\\''w'\\\\'','\\\\''http://schemas.openxmlformats.org/wordprocessingml/2006/main'\\\\''\\) $xml.SelectNodes\\('\\\\''//w:p'\\\\'', $ns\\) | ForEach-Object { $text = $_.SelectNodes\\('\\\\''.//w:t'\\\\'', $ns\\) | ForEach-Object { $_.InnerText } $line = $text -join '\\\\'''\\\\'' if \\($line.Trim\\(\\)\\) { Write-Output $line } } ')",
+      "Bash(powershell.exe -Command ' $path = '\\\\''C:\\\\Users\\\\Gali\\\\Downloads\\\\Requisitos_Sistema_Gestao_Ativos \\(1\\).docx'\\\\'' Add-Type -AssemblyName WindowsBase $pkg = [System.IO.Packaging.Package]::Open\\($path, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read\\) $part = $pkg.GetPart\\([uri]'\\\\''/word/document.xml'\\\\''\\) $reader = New-Object System.IO.StreamReader\\($part.GetStream\\(\\)\\) $xml = [xml]$reader.ReadToEnd\\(\\) $reader.Close\\(\\) $pkg.Close\\(\\) $ns = New-Object System.Xml.XmlNamespaceManager\\($xml.NameTable\\) $ns.AddNamespace\\('\\\\''w'\\\\'','\\\\''http://schemas.openxmlformats.org/wordprocessingml/2006/main'\\\\''\\) $xml.SelectNodes\\('\\\\''//w:p'\\\\'', $ns\\) | ForEach-Object { $text = $_.SelectNodes\\('\\\\''.//w:t'\\\\'', $ns\\) | ForEach-Object { $_.InnerText } $line = $text -join '\\\\'''\\\\'' if \\($line.Trim\\(\\)\\) { Write-Output $line } }')",
+      "Bash(start \"C:/Claude Code/gestao-ativos/prototipo_sga_gali_v4 \\(1\\).html\")",
+      "Bash(cmd.exe /c start \"\" \"C:\\\\Claude Code\\\\gestao-ativos\\\\prototipo_sga_gali_v4 \\(1\\).html\")",
+      "PowerShell(Invoke-Item \"C:\\\\Claude Code\\\\gestao-ativos\\\\prototipo_sga_gali_v4 \\(1\\).html\")",
+      "Bash(git config *)"
+    ]
+  }
+}
