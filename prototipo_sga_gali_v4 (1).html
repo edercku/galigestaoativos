@@ -360,10 +360,10 @@ tr:hover td{background:var(--g-bg)}
                   <th style="width:90px">Cód. ERP</th>
                   <th style="width:160px">Nome / Descrição</th>
                   <th style="width:95px">Categoria</th>
-                  <th style="width:125px">Localização</th>
+                  <th style="width:115px">Localização</th>
+                  <th style="width:115px">Departamento</th>
                   <th style="width:80px">Status</th>
                   <th style="width:85px">Responsável</th>
-                  <th style="width:80px">Garantia</th>
                   <th style="width:55px">Ações</th>
                 </tr></thead>
                 <tbody id="inv-tbody"></tbody>
@@ -1508,9 +1508,9 @@ function renderInv(){
     <td><span style="font-weight:500;font-size:12px">${a.nome}</span><br><span style="font-size:10px;color:var(--g-hint)">${a.fab}</span></td>
     <td>${catBadge(a.cat)}</td>
     <td style="color:var(--g-muted);font-size:11px">${a.loc}</td>
+    <td style="color:var(--g-muted);font-size:11px">${a.depto||'—'}</td>
     <td>${statusBadge(a.status)}</td>
     <td style="color:var(--g-muted);font-size:11px">${a.resp}</td>
-    <td>${garantiaBadge(a.garantia)}</td>
     <td><span class="clickable" onclick="openDrawer('${a.tag}')">Ver →</span></td>
   </tr>`).join('');
 
