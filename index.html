@@ -235,6 +235,10 @@ tr:hover td{background:var(--g-bg)}
           <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke-width="1.8"><path d="M13 3l-2 2-1-1 2-2c-.5-.2-2-.3-3 1L4 8l1 1-1 1-2-2 1-1 5-5c1-1.5 3-1.5 3-1.5L13 3z"/><circle cx="10" cy="10" r="3"/></svg>
           Manutenção
         </div>
+        <div class="nav-item" onclick="openTransModal('')">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke-width="1.8"><path d="M2 8h12M10 4l4 4-4 4M6 12l-4-4 4-4"/></svg>
+          Transferência
+        </div>
         <div class="nav-item" onclick="nav('rastreamento',this)">
           <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke-width="1.8"><circle cx="8" cy="7" r="2"/><path d="M8 1C5.2 1 3 3.2 3 6c0 4 5 9 5 9s5-5 5-9c0-2.8-2.2-5-5-5z"/></svg>
           Rastreamento
@@ -382,7 +386,7 @@ tr:hover td{background:var(--g-bg)}
           <div id="bulk-bar" style="display:none;position:sticky;bottom:12px;background:var(--g-text);color:#fff;border-radius:10px;padding:9px 14px;align-items:center;gap:10px;font-size:12px;box-shadow:0 4px 16px rgba(0,0,0,.3);margin-top:8px">
             <span id="bulk-count" style="font-weight:600">0 selecionados</span>
             <div style="flex:1"></div>
-            <button class="btn" style="font-size:11px;background:transparent;border-color:rgba(255,255,255,.3);color:#fff" onclick="bulkAction('transferir')">↔ Transferir</button>
+            <button class="btn" style="font-size:11px;background:transparent;border-color:rgba(255,255,255,.3);color:#fff" onclick="closeTransModal();openTransModal('');clearSel()">↔ Transferir</button>
             <button class="btn" style="font-size:11px;background:transparent;border-color:rgba(255,255,255,.3);color:#fff" onclick="bulkAction('status')">✓ Alterar status</button>
             <button class="btn" style="font-size:11px;background:var(--g-danger);border-color:var(--g-danger);color:#fff" onclick="bulkAction('descartar')">✕ Descartar</button>
             <button style="background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;font-size:16px;line-height:1" onclick="clearSel()">✕</button>
@@ -819,7 +823,216 @@ tr:hover td{background:var(--g-bg)}
   </div><!-- /main -->
 </div><!-- /app -->
 
+<!-- ── MODAL DE TRANSFERÊNCIA ── -->
+<div id="trans-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;align-items:center;justify-content:center">
+  <div style="background:var(--g-surface);border-radius:16px;width:420px;max-width:96vw;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,.3)">
+
+    <!-- Header -->
+    <div style="background:#16192A;padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:10px">
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="#F07A00" stroke-width="1.8"><path d="M2 8h12M10 4l4 4-4 4M6 12l-4-4 4-4"/></svg>
+        <span style="font-size:14px;font-weight:700;color:#fff">Transferência de ativo</span>
+      </div>
+      <button onclick="closeTransModal()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:18px;cursor:pointer;line-height:1">✕</button>
+    </div>
+
+    <!-- Stepper -->
+    <div style="display:flex;padding:12px 18px;background:var(--g-surface2);border-bottom:1px solid var(--g-border);gap:0">
+      <div id="ts-1" style="flex:1;text-align:center"><div style="width:22px;height:22px;border-radius:50%;background:var(--g-orange);color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-bottom:3px">1</div><div style="font-size:10px;color:var(--g-orange);font-weight:600">Scan</div></div>
+      <div style="flex:0 0 40px;display:flex;align-items:center;justify-content:center;padding-bottom:14px"><div style="height:2px;width:100%;background:var(--g-border2)" id="ts-line-1"></div></div>
+      <div id="ts-2" style="flex:1;text-align:center"><div style="width:22px;height:22px;border-radius:50%;background:var(--g-surface2);border:2px solid var(--g-border2);color:var(--g-hint);font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-bottom:3px" id="ts-c2">2</div><div style="font-size:10px;color:var(--g-hint);font-weight:600" id="ts-l2">Confirmar</div></div>
+      <div style="flex:0 0 40px;display:flex;align-items:center;justify-content:center;padding-bottom:14px"><div style="height:2px;width:100%;background:var(--g-border2)" id="ts-line-2"></div></div>
+      <div id="ts-3" style="flex:1;text-align:center"><div style="width:22px;height:22px;border-radius:50%;background:var(--g-surface2);border:2px solid var(--g-border2);color:var(--g-hint);font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;margin-bottom:3px" id="ts-c3">3</div><div style="font-size:10px;color:var(--g-hint);font-weight:600" id="ts-l3">Concluído</div></div>
+    </div>
+
+    <!-- PASSO 1: Scan -->
+    <div id="trans-step-1" style="padding:20px 18px">
+      <div style="background:#16192A;border-radius:12px;height:140px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;position:relative;overflow:hidden">
+        <div style="position:absolute;inset:0;border:2px solid var(--g-orange);border-radius:12px;opacity:.4"></div>
+        <div id="scan-line" style="position:absolute;top:0;left:16px;right:16px;height:2px;background:linear-gradient(90deg,transparent,var(--g-orange),transparent);animation:scanAnim 1.8s linear infinite"></div>
+        <div style="text-align:center;z-index:1">
+          <div style="font-size:32px;margin-bottom:6px">📷</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.5)">Câmera do celular ativa</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:2px">aponte para o código de barras</div>
+        </div>
+        <div style="position:absolute;top:10px;left:10px;width:20px;height:20px;border-top:2px solid var(--g-orange);border-left:2px solid var(--g-orange);border-radius:2px 0 0 0"></div>
+        <div style="position:absolute;top:10px;right:10px;width:20px;height:20px;border-top:2px solid var(--g-orange);border-right:2px solid var(--g-orange);border-radius:0 2px 0 0"></div>
+        <div style="position:absolute;bottom:10px;left:10px;width:20px;height:20px;border-bottom:2px solid var(--g-orange);border-left:2px solid var(--g-orange);border-radius:0 0 0 2px"></div>
+        <div style="position:absolute;bottom:10px;right:10px;width:20px;height:20px;border-bottom:2px solid var(--g-orange);border-right:2px solid var(--g-orange);border-radius:0 0 2px 0"></div>
+      </div>
+      <div style="font-size:11px;color:var(--g-muted);margin-bottom:6px;font-weight:600">Ou digite a TAG manualmente:</div>
+      <div style="display:flex;gap:8px">
+        <input class="form-input" id="trans-tag-input" placeholder="ex: GA-000836" style="flex:1;font-family:monospace;font-size:14px;font-weight:600;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')transConfirmarScan()">
+        <button class="btn btn-primary" onclick="transConfirmarScan()" style="white-space:nowrap">Confirmar →</button>
+      </div>
+      <div id="trans-scan-error" style="display:none;margin-top:8px;font-size:11px;color:var(--g-danger);font-weight:500"></div>
+      <!-- Atalhos rápidos -->
+      <div style="margin-top:14px;border-top:1px solid var(--g-border);padding-top:12px">
+        <div style="font-size:10px;color:var(--g-hint);margin-bottom:7px;text-transform:uppercase;letter-spacing:.05em;font-weight:600">Ativos recentes</div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px" id="trans-recentes"></div>
+      </div>
+    </div>
+
+    <!-- PASSO 2: Confirmar transferência -->
+    <div id="trans-step-2" style="display:none;padding:20px 18px">
+      <div style="background:var(--g-orange-light);border:1px solid var(--g-orange-mid);border-radius:10px;padding:12px;margin-bottom:16px">
+        <div style="font-size:10px;color:var(--g-hint);margin-bottom:3px">Ativo identificado</div>
+        <div style="font-size:15px;font-weight:800;color:var(--g-orange);font-family:monospace" id="trans-tag-display"></div>
+        <div style="font-size:12px;font-weight:600;color:var(--g-text);margin-top:2px" id="trans-nome-display"></div>
+        <div style="font-size:11px;color:var(--g-muted);margin-top:2px">Local atual: <strong id="trans-loc-atual"></strong></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div class="form-group full" style="grid-column:1/-1">
+          <label class="form-label">Novo local *</label>
+          <select class="form-select" id="trans-novo-loc" onchange="transUpdateDepto()">
+            <option value="">-- Selecione --</option>
+          </select>
+        </div>
+        <div class="form-group full" style="grid-column:1/-1">
+          <label class="form-label">Departamento</label>
+          <input class="form-input" id="trans-novo-depto" placeholder="ex: Almoxarifado, TK5 CEMIG">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Centro de custo</label>
+          <input class="form-input" id="trans-novo-cc" placeholder="ex: 212500">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Responsável</label>
+          <input class="form-input" id="trans-novo-resp" placeholder="Nome do responsável">
+        </div>
+        <div class="form-group full" style="grid-column:1/-1">
+          <label class="form-label">Motivo / Observação</label>
+          <input class="form-input" id="trans-motivo" placeholder="ex: Alocação para nova obra, retorno ao almoxarifado...">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="transVoltarScan()" style="flex:1">← Voltar</button>
+        <button class="btn btn-primary" onclick="transExecutar()" style="flex:2">Confirmar transferência</button>
+      </div>
+    </div>
+
+    <!-- PASSO 3: Sucesso -->
+    <div id="trans-step-3" style="display:none;padding:28px 18px;text-align:center">
+      <div style="width:56px;height:56px;border-radius:50%;background:var(--g-success-bg);border:2px solid var(--g-success);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:24px">✓</div>
+      <div style="font-size:16px;font-weight:700;color:var(--g-text);margin-bottom:6px">Transferência registrada!</div>
+      <div style="font-size:12px;color:var(--g-muted);margin-bottom:20px" id="trans-success-msg"></div>
+      <div style="background:var(--g-surface2);border-radius:10px;padding:12px;margin-bottom:20px;text-align:left" id="trans-success-detail"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="transNovaTransferencia()" style="flex:1">↔ Nova transferência</button>
+        <button class="btn btn-primary" onclick="closeTransModal()" style="flex:1">Concluir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes scanAnim{0%{top:10%}50%{top:85%}100%{top:10%}}
+</style>
+
 <script>
+// ── Histórico de movimentações ──
+let movimentacoes = [];
+let transAtivo = null;
+
+// ── TRANSFERÊNCIA ──
+function openTransModal(tagInicial){
+  document.getElementById('trans-modal').style.display='flex';
+  transGoStep(1);
+  const inp=document.getElementById('trans-tag-input');
+  inp.value=tagInicial||'';
+  document.getElementById('trans-scan-error').style.display='none';
+  // Atalhos rápidos: últimos 5 ativos
+  document.getElementById('trans-recentes').innerHTML=ativos.slice(0,5).map(a=>
+    `<span onclick="document.getElementById('trans-tag-input').value='${a.tag}';transConfirmarScan()"
+      style="padding:4px 10px;background:var(--g-surface2);border:1px solid var(--g-border2);border-radius:20px;font-size:11px;cursor:pointer;font-family:monospace;color:var(--g-orange)">${a.tag}</span>`
+  ).join('');
+  setTimeout(()=>inp.focus(),100);
+}
+function closeTransModal(){
+  document.getElementById('trans-modal').style.display='none';
+  transAtivo=null;
+}
+function transGoStep(n){
+  [1,2,3].forEach(i=>{
+    document.getElementById('trans-step-'+i).style.display=i===n?'block':'none';
+  });
+  // Atualiza stepper visual
+  const cores={done:'var(--g-success)',active:'var(--g-orange)',idle:'var(--g-border2)'};
+  [1,2,3].forEach(i=>{
+    const c=document.getElementById('ts-c'+i);
+    const l=document.getElementById('ts-l'+i);
+    if(!c||!l) return;
+    const state=i<n?'done':i===n?'active':'idle';
+    c.style.background=state==='done'?'var(--g-success)':state==='active'?'var(--g-orange)':'var(--g-surface2)';
+    c.style.borderColor=state==='idle'?'var(--g-border2)':state==='done'?'var(--g-success)':'var(--g-orange)';
+    c.style.color=state==='idle'?'var(--g-hint)':'#fff';
+    c.textContent=state==='done'?'✓':i;
+    l.style.color=state==='active'?'var(--g-orange)':state==='done'?'var(--g-success)':'var(--g-hint)';
+  });
+  if(document.getElementById('ts-line-1')) document.getElementById('ts-line-1').style.background=n>1?'var(--g-success)':'var(--g-border2)';
+  if(document.getElementById('ts-line-2')) document.getElementById('ts-line-2').style.background=n>2?'var(--g-success)':'var(--g-border2)';
+}
+function transConfirmarScan(){
+  const tag=document.getElementById('trans-tag-input').value.trim().toUpperCase();
+  const err=document.getElementById('trans-scan-error');
+  if(!tag){ err.textContent='Digite ou escaneie uma TAG.'; err.style.display='block'; return; }
+  const a=ativos.find(x=>x.tag===tag);
+  if(!a){ err.textContent='TAG "'+tag+'" não encontrada no sistema.'; err.style.display='block'; return; }
+  err.style.display='none';
+  transAtivo=a;
+  document.getElementById('trans-tag-display').textContent=a.tag;
+  document.getElementById('trans-nome-display').textContent=a.nome;
+  document.getElementById('trans-loc-atual').textContent=(a.depto?a.depto+' — ':'')+a.loc;
+  // Popula select de locais
+  const sel=document.getElementById('trans-novo-loc');
+  sel.innerHTML='<option value="">-- Selecione o novo local --</option>'+
+    localizacoes.map(l=>`<option value="${l.nome}">${l.nome}</option>`).join('');
+  document.getElementById('trans-novo-depto').value='';
+  document.getElementById('trans-novo-cc').value='';
+  document.getElementById('trans-novo-resp').value=a.resp||'';
+  document.getElementById('trans-motivo').value='';
+  transGoStep(2);
+}
+function transVoltarScan(){ transGoStep(1); }
+function transExecutar(){
+  const novoLoc=document.getElementById('trans-novo-loc').value;
+  if(!novoLoc){ showToast('Selecione o novo local'); return; }
+  const novoDepto=document.getElementById('trans-novo-depto').value.trim();
+  const novoCc=document.getElementById('trans-novo-cc').value.trim();
+  const novoResp=document.getElementById('trans-novo-resp').value.trim();
+  const motivo=document.getElementById('trans-motivo').value.trim();
+  const a=transAtivo;
+  // Registra movimentação
+  const agora=new Date();
+  const dtStr=agora.toLocaleDateString('pt-BR')+' '+agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  movimentacoes.unshift({
+    tag:a.tag, nome:a.nome,
+    locAntes:(a.depto?a.depto+' — ':'')+a.loc,
+    locDepois:(novoDepto?novoDepto+' — ':'')+novoLoc,
+    ccAntes:a.cc, ccDepois:novoCc,
+    resp:novoResp||a.resp, motivo:motivo||'Transferência manual',
+    data:dtStr
+  });
+  // Atualiza ativo
+  a.loc=novoLoc; a.depto=novoDepto||a.depto; a.cc=novoCc||a.cc; a.resp=novoResp||a.resp;
+  // Tela de sucesso
+  document.getElementById('trans-success-msg').textContent=
+    `${a.tag} transferido com sucesso em ${dtStr}`;
+  document.getElementById('trans-success-detail').innerHTML=`
+    <div style="font-size:10px;color:var(--g-hint);margin-bottom:8px;text-transform:uppercase;font-weight:600">Resumo da movimentação</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><div style="font-size:10px;color:var(--g-hint)">De</div><div style="font-size:12px;font-weight:600;color:var(--g-danger)">${movimentacoes[0].locAntes}</div></div>
+      <div><div style="font-size:10px;color:var(--g-hint)">Para</div><div style="font-size:12px;font-weight:600;color:var(--g-success)">${movimentacoes[0].locDepois}</div></div>
+      ${novoCc?`<div><div style="font-size:10px;color:var(--g-hint)">Centro de custo</div><div style="font-size:12px;font-family:monospace">${novoCc}</div></div>`:''}
+      ${novoResp?`<div><div style="font-size:10px;color:var(--g-hint)">Responsável</div><div style="font-size:12px">${novoResp}</div></div>`:''}
+      ${motivo?`<div style="grid-column:1/-1"><div style="font-size:10px;color:var(--g-hint)">Motivo</div><div style="font-size:12px">${motivo}</div></div>`:''}
+    </div>`;
+  transGoStep(3);
+  // Atualiza inventário e dashboard
+  filteredAtivos=[...ativos]; filterTable(); renderDashboard(); renderLocProgress();
+}
+function transNovaTransferencia(){ transGoStep(1); document.getElementById('trans-tag-input').value=''; transAtivo=null; }
+
 // ── Estado global ──
 let categorias = [
   {id:1, nome:'TI',             icone:'🖥',  desc:'Tecnologia da Informação'},
@@ -1194,10 +1407,21 @@ function openDrawer(tag){
     <div class="rev-title">Garantia</div>
     <div style="margin-bottom:16px">${garantiaBadge(a.garantia)} <span style="font-size:11px;color:var(--g-muted);margin-left:6px">${a.garantia!=='—'?'vencimento':'sem garantia'}</span></div>
     <div style="display:flex;flex-direction:column;gap:6px">
+      <button class="btn btn-primary" style="font-size:12px;width:100%;background:#16192A;border-color:#16192A" onclick="closeDrawer();openTransModal('${a.tag}')">↔ Transferir ativo</button>
       <button class="btn btn-primary" style="font-size:12px;width:100%" onclick="nav('manutencao',null);closeDrawer()">🔧 Abrir OS de manutenção</button>
       <button class="btn" style="font-size:12px;width:100%" onclick="showToast('Gerando etiqueta QR Code...')">🏷 Imprimir etiqueta</button>
       <button class="btn" style="font-size:12px;width:100%" onclick="showToast('Ativo copiado para edição')">✏ Editar ativo</button>
     </div>
+    ${(()=>{const hist=movimentacoes.filter(m=>m.tag===a.tag);if(!hist.length)return'';return`
+    <div class="rev-title" style="margin-top:16px">Histórico de movimentações</div>
+    <div style="margin-top:6px">${hist.map(m=>`
+      <div style="display:flex;gap:8px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--g-border)">
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--g-orange);margin-top:5px;flex-shrink:0"></div>
+        <div style="font-size:11px">
+          <div style="color:var(--g-text)"><span style="color:var(--g-danger)">${m.locAntes}</span> → <span style="color:var(--g-success)">${m.locDepois}</span></div>
+          <div style="color:var(--g-hint);margin-top:1px">${m.data} · ${m.resp}${m.motivo?' · '+m.motivo:''}</div>
+        </div>
+      </div>`).join('')}</div>`;})()}
   `;
   document.getElementById('ativo-drawer').style.display='block';
 }
