@@ -1807,21 +1807,6 @@ function showToast(msg){
   toastTimer=setTimeout(()=>t.style.opacity='0',3000);
 }
 
-// ── Gráfico Dashboard ──
-const barVals=[18,24,31,22,38,28,42,35,47,51,44,38];
-const mx=Math.max(...barVals);
-document.getElementById('bar-chart').innerHTML=barVals.map((v,i)=>`<div class="bar${i===10?' hi':''}" title="${v} OS" style="height:${Math.round(v/mx*100)}%"></div>`).join('');
-
-// ── Timeline Dashboard ──
-const eventos=[
-  {dot:'danger',text:'OS-2842: falha hidráulica na Empilhadeira Toyota (Matriz)',time:'Hoje, 11:30'},
-  {dot:'warning',text:'OS-2847: PM iniciada no Compressor Atlas Copco (TK4)',time:'Hoje, 09:00'},
-  {dot:'success',text:'OS-2844: torno CNC reparado e liberado (TK5 CEMIG)',time:'Ontem, 17:45'},
-  {dot:'info',text:'Ativo VEI-009 transferido para Pós Venda',time:'Ontem, 14:20'},
-  {dot:'warning',text:'Garantia do No-break APC vence em 15 dias',time:'Ontem, 08:00'},
-];
-document.getElementById('dash-timeline').innerHTML=eventos.map(e=>`<div class="tl-item"><div class="tl-dot ${e.dot}"></div><div><div class="tl-text">${e.text}</div><div class="tl-time">${e.time}</div></div></div>`).join('');
-
 // ── DASHBOARD dinâmico ──
 function renderDashboard(){
   const total=ativos.length;
