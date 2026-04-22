@@ -1318,7 +1318,7 @@ function nav(id,el){
 }
 function actionBtn(){
   const pg = document.getElementById('page-title').textContent;
-  if(pg==='Dashboard'||pg==='Inventário de ativos') nav('cadastro',null);
+  if(pg==='Estoque de ativos') nav('cadastro',null);
   else if(pg==='Ordens de serviço') openOSModal('');
   else if(pg==='Localizações') toggleAddLoc();
 }
