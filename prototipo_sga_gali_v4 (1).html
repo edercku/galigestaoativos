@@ -851,6 +851,68 @@ tr:hover td{background:var(--g-bg)}
   </div><!-- /main -->
 </div><!-- /app -->
 
+<!-- ── MODAL DE NOVA OS ── -->
+<div id="os-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;align-items:center;justify-content:center">
+  <div style="background:var(--g-surface);border-radius:16px;width:460px;max-width:96vw;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,.3)">
+    <div style="background:#16192A;padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:10px">
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="#F07A00" stroke-width="1.8"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
+        <span style="font-size:14px;font-weight:700;color:#fff">Nova Ordem de Serviço</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:11px;font-family:monospace;color:var(--g-orange);font-weight:700" id="os-num-preview"></span>
+        <button onclick="closeOSModal()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:18px;cursor:pointer;line-height:1">✕</button>
+      </div>
+    </div>
+    <div style="padding:20px 18px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label class="form-label">Tipo *</label>
+        <select class="form-select" id="os-tipo">
+          <option value="Corretiva">Corretiva</option>
+          <option value="Preventiva">Preventiva</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Prioridade *</label>
+        <select class="form-select" id="os-prior">
+          <option value="Média">Média</option>
+          <option value="Alta">Alta</option>
+          <option value="Crítica">Crítica</option>
+          <option value="Baixa">Baixa</option>
+        </select>
+      </div>
+      <div class="form-group full" style="grid-column:1/-1">
+        <label class="form-label">Ativo (TAG) *</label>
+        <div style="display:flex;gap:6px">
+          <input class="form-input" id="os-tag" placeholder="ex: GA-000836" style="flex:1;font-family:monospace;font-weight:600;text-transform:uppercase" oninput="this.value=this.value.toUpperCase();osPreviewAtivo()">
+          <button class="btn" style="font-size:11px;padding:6px 10px;white-space:nowrap" onclick="osAbrirScan()">📷 Scan</button>
+        </div>
+        <div id="os-ativo-preview" style="margin-top:5px;font-size:11px;color:var(--g-success)"></div>
+      </div>
+      <div class="form-group full" style="grid-column:1/-1">
+        <label class="form-label">Descrição do problema *</label>
+        <textarea class="form-input" id="os-desc" rows="2" placeholder="Descreva o problema ou a atividade a ser realizada..." style="resize:vertical;font-family:inherit"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Responsável técnico</label>
+        <input class="form-input" id="os-resp" placeholder="Nome do técnico">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Data prevista conclusão</label>
+        <input class="form-input" type="date" id="os-dt-prev">
+      </div>
+      <div class="form-group full" style="grid-column:1/-1">
+        <label class="form-label">Observações adicionais</label>
+        <input class="form-input" id="os-obs" placeholder="Peças necessárias, acesso especial, etc.">
+      </div>
+    </div>
+    <div style="padding:0 18px 18px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="closeOSModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarOS()">Abrir OS →</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── MODAL DE TRANSFERÊNCIA ── -->
 <div id="trans-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;align-items:center;justify-content:center">
   <div style="background:var(--g-surface);border-radius:16px;width:420px;max-width:96vw;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,.3)">
@@ -1259,7 +1321,62 @@ function nav(id,el){
 function actionBtn(){
   const pg = document.getElementById('page-title').textContent;
   if(pg==='Dashboard'||pg==='Inventário de ativos') nav('cadastro',null);
-  else if(pg==='Localizações'){ toggleAddLoc(); }
+  else if(pg==='Ordens de serviço') openOSModal('');
+  else if(pg==='Localizações') toggleAddLoc();
+}
+
+// ── OS MODAL ──
+let nextOsNum = 1;
+function openOSModal(tag){
+  const n='OS-'+String(nextOsNum).padStart(4,'0');
+  document.getElementById('os-num-preview').textContent=n;
+  document.getElementById('os-tag').value=tag||'';
+  document.getElementById('os-tipo').value='Corretiva';
+  document.getElementById('os-prior').value='Média';
+  document.getElementById('os-desc').value='';
+  document.getElementById('os-resp').value='';
+  document.getElementById('os-obs').value='';
+  const hoje=new Date(); hoje.setDate(hoje.getDate()+3);
+  document.getElementById('os-dt-prev').value=hoje.toISOString().split('T')[0];
+  osPreviewAtivo(tag);
+  document.getElementById('os-modal').style.display='flex';
+}
+function closeOSModal(){ document.getElementById('os-modal').style.display='none'; }
+function osPreviewAtivo(tagParam){
+  const tag=(tagParam||document.getElementById('os-tag')?.value||'').trim();
+  const el=document.getElementById('os-ativo-preview');
+  if(!tag){el.textContent='';return;}
+  const a=ativos.find(x=>x.tag===tag);
+  el.textContent=a?'✓ '+a.nome+' — '+a.loc:'TAG não encontrada no sistema';
+  el.style.color=a?'var(--g-success)':'var(--g-danger)';
+}
+function osAbrirScan(){ closeOSModal(); openTransModal(''); }
+function salvarOS(){
+  const tag=document.getElementById('os-tag').value.trim();
+  const desc=document.getElementById('os-desc').value.trim();
+  if(!tag){showToast('Informe a TAG do ativo');return;}
+  if(!desc){showToast('Informe a descrição do problema');return;}
+  const a=ativos.find(x=>x.tag===tag);
+  if(!a){showToast('TAG não encontrada: '+tag);return;}
+  const num='OS-'+String(nextOsNum).padStart(4,'0');
+  nextOsNum++;
+  const hoje=new Date();
+  const dtStr=hoje.toLocaleDateString('pt-BR');
+  osList.unshift({
+    num, tipo:document.getElementById('os-tipo').value,
+    ativo:a.nome, tag:a.tag, loc:a.depto?a.depto+' — '+a.loc:a.loc,
+    prior:document.getElementById('os-prior').value,
+    status:'Aberto',
+    resp:document.getElementById('os-resp').value||'—',
+    data:dtStr,
+    dtPrev:document.getElementById('os-dt-prev').value,
+    desc, obs:document.getElementById('os-obs').value
+  });
+  closeOSModal();
+  showToast('OS '+num+' aberta com sucesso!');
+  nav('manutencao',null);
+  renderOS('Todos');
+  renderDashboard();
 }
 
 // ── INVENTÁRIO ──
@@ -1436,7 +1553,7 @@ function openDrawer(tag){
     <div style="margin-bottom:16px">${garantiaBadge(a.garantia)} <span style="font-size:11px;color:var(--g-muted);margin-left:6px">${a.garantia!=='—'?'vencimento':'sem garantia'}</span></div>
     <div style="display:flex;flex-direction:column;gap:6px">
       <button class="btn btn-primary" style="font-size:12px;width:100%;background:#16192A;border-color:#16192A" onclick="closeDrawer();openTransModal('${a.tag}')">↔ Transferir ativo</button>
-      <button class="btn btn-primary" style="font-size:12px;width:100%" onclick="nav('manutencao',null);closeDrawer()">🔧 Abrir OS de manutenção</button>
+      <button class="btn btn-primary" style="font-size:12px;width:100%" onclick="closeDrawer();openOSModal('${a.tag}')">🔧 Abrir OS de manutenção</button>
       <button class="btn" style="font-size:12px;width:100%" onclick="showToast('Gerando etiqueta QR Code...')">🏷 Imprimir etiqueta</button>
       <button class="btn" style="font-size:12px;width:100%" onclick="showToast('Ativo copiado para edição')">✏ Editar ativo</button>
     </div>
@@ -1482,6 +1599,18 @@ const osList=[];
 function priorBadge(p){const m={Crítica:'danger',Alta:'warning',Média:'info',Baixa:'neutral'};return`<span class="badge badge-${m[p]||'neutral'}">${p}</span>`;}
 function stBadge(s){const m={Aberto:'info','Em andamento':'warning',Concluído:'success'};return`<span class="badge badge-${m[s]||'neutral'}">${s}</span>`;}
 function renderOS(filter){
+  // Atualiza contadores dos chips
+  const chips=[
+    {f:'Todos',   n:osList.length},
+    {f:'Aberto',  n:osList.filter(o=>o.status==='Aberto').length},
+    {f:'Em andamento', n:osList.filter(o=>o.status==='Em andamento').length},
+    {f:'Concluído',n:osList.filter(o=>o.status==='Concluído').length},
+    {f:'Crítico', n:osList.filter(o=>o.prior==='Crítica').length},
+  ];
+  document.querySelectorAll('#os-filters .filter-chip').forEach((el,i)=>{
+    const {f,n}=chips[i]||{};
+    if(f) el.textContent=(f==='Crítico'?'⚠ Crítico':f)+' ('+n+')';
+  });
   const lista=filter==='Todos'?osList:filter==='Crítico'?osList.filter(o=>o.prior==='Crítica'):osList.filter(o=>o.status===filter);
   if(!lista.length){document.getElementById('os-list').innerHTML='<div style="padding:32px;text-align:center;color:var(--g-hint);font-size:13px">Nenhuma ordem de serviço encontrada</div>';return;}
   document.getElementById('os-list').innerHTML=lista.map((o,i)=>`
