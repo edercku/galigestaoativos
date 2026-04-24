@@ -206,6 +206,7 @@ tr:hover td{background:var(--g-bg)}
 .cat-Infraestrutura{background:#F0EBF8;color:#6B3FA0}
 .cat-Mobiliário{background:#F0F1F4;color:#5A5E6B}
 </style>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <!-- ── TELA DE LOGIN ── -->
 <div id="login-screen" style="display:none;position:fixed;inset:0;background:#0F1120;z-index:999;align-items:center;justify-content:center;flex-direction:column">
   <div style="width:360px;padding:40px;background:#16192A;border-radius:20px;box-shadow:0 24px 64px rgba(0,0,0,.5)">
@@ -903,6 +904,30 @@ tr:hover td{background:var(--g-bg)}
   </div><!-- /main -->
 </div><!-- /main-app -->
 
+<!-- ── MODAL DE CÂMERA / SCAN ── -->
+<div id="scan-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;align-items:center;justify-content:center;flex-direction:column">
+  <div style="width:340px;max-width:96vw;background:#16192A;border-radius:16px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,.5)">
+    <div style="padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.07)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:18px">📷</span>
+        <span style="font-size:14px;font-weight:700;color:#fff">Leitura de TAG</span>
+      </div>
+      <button onclick="fecharScanModal()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer;line-height:1">✕</button>
+    </div>
+    <div style="padding:16px 18px">
+      <div id="scan-reader" style="border-radius:10px;overflow:hidden;background:#000;min-height:200px"></div>
+      <div id="scan-status" style="margin-top:10px;font-size:12px;color:rgba(255,255,255,.5);text-align:center">Aponte a câmera para o código de barras ou QR Code da TAG</div>
+      <div style="margin-top:14px;border-top:1px solid rgba(255,255,255,.07);padding-top:12px">
+        <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:6px">Ou digite manualmente:</div>
+        <div style="display:flex;gap:8px">
+          <input id="scan-manual-input" class="form-input" placeholder="ex: GA-000836" style="flex:1;font-family:monospace;font-weight:600;text-transform:uppercase;background:#0F1120;border-color:rgba(255,255,255,.15);color:#fff" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')confirmarScanManual()">
+          <button class="btn btn-primary" onclick="confirmarScanManual()" style="white-space:nowrap;font-size:12px">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ── MODAL DE NOVA OS ── -->
 <div id="os-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;align-items:center;justify-content:center">
   <div style="background:var(--g-surface);border-radius:16px;width:460px;max-width:96vw;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,.3)">
@@ -937,7 +962,7 @@ tr:hover td{background:var(--g-bg)}
         <label class="form-label">Ativo (TAG) *</label>
         <div style="display:flex;gap:6px">
           <input class="form-input" id="os-tag" placeholder="ex: GA-000836" style="flex:1;font-family:monospace;font-weight:600;text-transform:uppercase" oninput="this.value=this.value.toUpperCase();osPreviewAtivo()">
-          <button class="btn" style="font-size:11px;padding:6px 10px;white-space:nowrap" onclick="osAbrirScan()">📷 Scan</button>
+          <button class="btn" style="font-size:11px;padding:6px 10px;white-space:nowrap" onclick="abrirScanModal('os')">📷 Scan</button>
         </div>
         <div id="os-ativo-preview" style="margin-top:5px;font-size:11px;color:var(--g-success)"></div>
       </div>
@@ -989,12 +1014,12 @@ tr:hover td{background:var(--g-bg)}
 
     <!-- PASSO 1: Scan -->
     <div id="trans-step-1" style="padding:20px 18px">
-      <div style="background:#16192A;border-radius:12px;height:140px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;position:relative;overflow:hidden">
+      <div style="background:#16192A;border-radius:12px;height:140px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;position:relative;overflow:hidden;cursor:pointer" onclick="abrirScanModal('trans')">
         <div style="position:absolute;inset:0;border:2px solid var(--g-orange);border-radius:12px;opacity:.4"></div>
         <div id="scan-line" style="position:absolute;top:0;left:16px;right:16px;height:2px;background:linear-gradient(90deg,transparent,var(--g-orange),transparent);animation:scanAnim 1.8s linear infinite"></div>
         <div style="text-align:center;z-index:1">
           <div style="font-size:32px;margin-bottom:6px">📷</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.5)">Câmera do celular ativa</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.5)">Toque para abrir a câmera</div>
           <div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:2px">aponte para o código de barras</div>
         </div>
         <div style="position:absolute;top:10px;left:10px;width:20px;height:20px;border-top:2px solid var(--g-orange);border-left:2px solid var(--g-orange);border-radius:2px 0 0 0"></div>
@@ -2016,6 +2041,63 @@ function renderDashboard(){
       </div>
       <span class="badge badge-${o.status==='Aberto'?'info':o.status==='Em andamento'?'warning':'success'}" style="flex-shrink:0;height:fit-content">${o.status}</span>
     </div>`).join('');
+}
+
+// ── SCANNER DE CÂMERA ──
+let html5QrCode = null;
+let scanCallback = null; // 'trans' | 'os'
+
+function abrirScanModal(origem) {
+  scanCallback = origem;
+  document.getElementById('scan-modal').style.display = 'flex';
+  document.getElementById('scan-manual-input').value = '';
+  document.getElementById('scan-status').textContent = 'Aponte a câmera para o código de barras ou QR Code da TAG';
+  document.getElementById('scan-status').style.color = 'rgba(255,255,255,.5)';
+
+  // Aguarda o elemento estar visível antes de iniciar
+  setTimeout(() => {
+    if (html5QrCode) { try { html5QrCode.stop(); } catch(e){} }
+    html5QrCode = new Html5Qrcode('scan-reader');
+    html5QrCode.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: { width: 240, height: 80 }, aspectRatio: 1.5 },
+      (decoded) => {
+        const tag = decoded.trim().toUpperCase();
+        html5QrCode.stop().catch(()=>{});
+        document.getElementById('scan-status').textContent = '✓ Lido: ' + tag;
+        document.getElementById('scan-status').style.color = '#4CAF50';
+        setTimeout(() => { aplicarTagLida(tag); fecharScanModal(); }, 600);
+      },
+      () => {} // ignora erros de frame
+    ).catch(err => {
+      document.getElementById('scan-status').textContent = '⚠ Câmera não disponível: ' + err;
+      document.getElementById('scan-status').style.color = 'var(--g-danger)';
+    });
+  }, 200);
+}
+
+function fecharScanModal() {
+  if (html5QrCode) { try { html5QrCode.stop(); } catch(e){} html5QrCode = null; }
+  document.getElementById('scan-modal').style.display = 'none';
+}
+
+function confirmarScanManual() {
+  const tag = document.getElementById('scan-manual-input').value.trim().toUpperCase();
+  if (!tag) return;
+  if (html5QrCode) { try { html5QrCode.stop(); } catch(e){} html5QrCode = null; }
+  fecharScanModal();
+  aplicarTagLida(tag);
+}
+
+function aplicarTagLida(tag) {
+  if (scanCallback === 'trans') {
+    document.getElementById('trans-tag-input').value = tag;
+    transConfirmarScan();
+  } else if (scanCallback === 'os') {
+    document.getElementById('os-tag').value = tag;
+    osPreviewAtivo(tag);
+  }
+  scanCallback = null;
 }
 
 // ── LOGIN / LOGOUT ──
