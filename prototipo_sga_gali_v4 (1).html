@@ -523,6 +523,15 @@ tr:hover td{background:var(--g-bg)}
           <tbody id="rel-tbody"></tbody></table>
         </div>
 
+        <!-- Relatório de Estoque -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-header">
+            <span class="card-title">Estoque de ativos</span>
+            <button class="btn" style="font-size:11px;padding:5px 10px" onclick="showToast('Exportando estoque...')">Exportar XLSX ↗</button>
+          </div>
+          <div id="rel-estoque-table"></div>
+        </div>
+
         <!-- Relatório de Movimentações -->
         <div class="card">
           <div class="card-header">
@@ -683,8 +692,8 @@ tr:hover td{background:var(--g-bg)}
                 <input class="form-input" id="cad-resp" placeholder="Nome do responsável pelo ativo">
               </div>
               <div class="form-group">
-                <label class="form-label">Centro de custo</label>
-                <input class="form-input" id="cad-cc" placeholder="ex: CC-0042, TI-INFRA">
+                <label class="form-label">Centro de custo *</label>
+                <input class="form-input" id="cad-cc" placeholder="ex: 212500, 3031559">
               </div>
               <div class="form-group">
                 <label class="form-label">Departamento</label>
@@ -697,7 +706,7 @@ tr:hover td{background:var(--g-bg)}
           </div>
           <div style="display:flex;justify-content:flex-end;gap:8px;padding-bottom:4px">
             <button class="btn" onclick="goStep(2)">← Anterior</button>
-            <button class="btn btn-primary" onclick="goStep(4)">Próximo →</button>
+            <button class="btn btn-primary" onclick="validarStep3()">Próximo →</button>
           </div>
         </div>
 
@@ -1026,7 +1035,7 @@ tr:hover td{background:var(--g-bg)}
           <select class="form-select" id="trans-novo-depto"><option value="">-- Selecione --</option></select>
         </div>
         <div class="form-group">
-          <label class="form-label">Centro de custo</label>
+          <label class="form-label">Centro de custo *</label>
           <input class="form-input" id="trans-novo-cc" placeholder="ex: 212500">
         </div>
         <div class="form-group">
@@ -1130,8 +1139,10 @@ function transVoltarScan(){ transGoStep(1); }
 function transExecutar(){
   const novoLoc=document.getElementById('trans-novo-loc').value;
   if(!novoLoc){ showToast('Selecione o novo local'); return; }
-  const novoDepto=document.getElementById('trans-novo-depto').value.trim();
   const novoCc=document.getElementById('trans-novo-cc').value.trim();
+  if(!novoCc){ document.getElementById('trans-novo-cc').focus(); document.getElementById('trans-novo-cc').style.borderColor='var(--g-danger)'; showToast('⚠ Centro de custo é obrigatório'); return; }
+  document.getElementById('trans-novo-cc').style.borderColor='';
+  const novoDepto=document.getElementById('trans-novo-depto').value.trim();
   const novoResp=document.getElementById('trans-novo-resp').value.trim();
   const motivo=document.getElementById('trans-motivo').value.trim();
   const a=transAtivo;
@@ -1418,7 +1429,7 @@ function nav(id,el){
   if(id==='inventario'){ currentPage=1; filterTable(); }
   if(id==='manutencao') renderOS('Todos');
   if(id==='rastreamento'){renderRastr();renderMovimentacoes();}
-  if(id==='relatorios'){renderRel();renderMovimentacoes();}
+  if(id==='relatorios'){renderRel();renderRelEstoque();renderMovimentacoes();}
   if(id==='localizacoes'){ renderLocList(); renderDeptos(); }
   if(id==='configuracoes') renderCategorias();
   if(id==='cadastro') initCadastro();
@@ -1783,7 +1794,46 @@ function renderMovimentacoes(){
   if(relTable) relTable.innerHTML=html;
 }
 
+function validarStep3(){
+  const cc=document.getElementById('cad-cc').value.trim();
+  if(!cc){
+    const el=document.getElementById('cad-cc');
+    el.style.borderColor='var(--g-danger)';
+    el.focus();
+    showToast('⚠ Centro de custo é obrigatório');
+    return;
+  }
+  document.getElementById('cad-cc').style.borderColor='';
+  goStep(4);
+}
+
 // ── RELATÓRIOS ──
+function renderRelEstoque(){
+  const el=document.getElementById('rel-estoque-table');
+  if(!el) return;
+  if(!ativos.length){ el.innerHTML='<div style="padding:20px;text-align:center;color:var(--g-hint);font-size:12px">Nenhum ativo cadastrado</div>'; return; }
+  el.innerHTML=`<table><thead><tr>
+    <th style="width:90px">TAG</th>
+    <th style="width:90px">Cód. ERP</th>
+    <th>Nome / Descrição</th>
+    <th style="width:80px">Categoria</th>
+    <th style="width:110px">Localização</th>
+    <th style="width:110px">Departamento</th>
+    <th style="width:80px">Centro de custo</th>
+    <th style="width:70px">Status</th>
+    <th style="width:85px">Responsável</th>
+  </tr></thead><tbody>${ativos.map(a=>`<tr>
+    <td style="font-family:monospace;font-size:11px;font-weight:700;color:var(--g-orange)">${a.tag}</td>
+    <td style="font-family:monospace;font-size:11px;color:var(--g-muted)">${a.erp||'—'}</td>
+    <td style="font-size:11px;font-weight:500">${a.nome}</td>
+    <td style="font-size:11px">${a.cat}</td>
+    <td style="font-size:11px;color:var(--g-muted)">${a.loc}</td>
+    <td style="font-size:11px;color:var(--g-muted)">${a.depto||'—'}</td>
+    <td style="font-family:monospace;font-size:11px;font-weight:600;color:var(--g-orange)">${a.cc||'—'}</td>
+    <td>${statusBadge(a.status)}</td>
+    <td style="font-size:11px;color:var(--g-muted)">${a.resp}</td>
+  </tr>`).join('')}</tbody></table>`;
+}
 function renderRel(){
   const rels=[
     {nome:'Inventário geral de ativos',atualizado:'Hoje, 08:00',formato:'PDF · XLSX'},
