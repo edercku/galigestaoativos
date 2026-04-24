@@ -376,7 +376,7 @@ tr:hover td{background:var(--g-bg)}
               <div style="display:flex;gap:6px;align-items:center">
                 <span style="font-size:11px;color:var(--g-hint)" id="inv-page-info"></span>
                 <button class="btn" style="font-size:11px;padding:5px 10px" onclick="showImportModal()">⬆ Importar CSV</button>
-                <button class="btn" style="font-size:11px;padding:5px 10px">Exportar ↗</button>
+                <button class="btn" style="font-size:11px;padding:5px 10px" onclick="exportarCSV()">Exportar ↗</button>
               </div>
             </div>
             <div style="overflow-x:auto">
@@ -528,7 +528,7 @@ tr:hover td{background:var(--g-bg)}
         <div class="card" style="margin-bottom:14px">
           <div class="card-header">
             <span class="card-title">Estoque de ativos</span>
-            <button class="btn" style="font-size:11px;padding:5px 10px" onclick="showToast('Exportando estoque...')">Exportar XLSX ↗</button>
+            <button class="btn" style="font-size:11px;padding:5px 10px" onclick="exportarCSV()">Exportar CSV ↗</button>
           </div>
           <div id="rel-estoque-table"></div>
         </div>
@@ -539,7 +539,7 @@ tr:hover td{background:var(--g-bg)}
             <span class="card-title">Movimentações de ativos</span>
             <div style="display:flex;gap:6px;align-items:center">
               <span style="font-size:11px;color:var(--g-hint)" id="rel-mov-count"></span>
-              <button class="btn" style="font-size:11px;padding:5px 10px" onclick="showToast('Exportando movimentações...')">Exportar XLSX ↗</button>
+              <button class="btn" style="font-size:11px;padding:5px 10px" onclick="exportarMovCSV()">Exportar CSV ↗</button>
             </div>
           </div>
           <div id="rel-mov-table">
@@ -2016,6 +2016,38 @@ function addDocSimul(){
   const docs=['NF_compra.pdf','manual_operacao.pdf','certificado_calibracao.xml'];
   const d=docs[Math.floor(Math.random()*docs.length)];
   list.innerHTML+=`<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:var(--g-surface2);border-radius:6px;margin-top:5px;font-size:11px"><span>📄 ${d}</span><span style="margin-left:auto;color:var(--g-danger);cursor:pointer" onclick="this.parentNode.remove()">✕</span></div>`;
+}
+
+// ── EXPORTAÇÃO CSV ──
+function csvEscape(v){ const s=String(v==null||v===undefined?'':v); return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s; }
+function baixarCSV(nomeArquivo, linhas){
+  const bom='\uFEFF'; // BOM para Excel reconhecer UTF-8
+  const conteudo=bom+linhas.map(l=>l.map(csvEscape).join(';')).join('\r\n');
+  const blob=new Blob([conteudo],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=nomeArquivo; a.click();
+  URL.revokeObjectURL(url);
+}
+function exportarCSV(){
+  const lista=filteredAtivos.length?filteredAtivos:ativos;
+  const hoje=new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+  const linhas=[
+    ['TAG','Cód. ERP','Nome / Descrição','Categoria','Fabricante','Modelo','Nº Série','Localização','Departamento','Centro de Custo','Status','Responsável','Valor'],
+    ...lista.map(a=>[a.tag,a.erp||'',a.nome,a.cat,a.fab||'',a.modelo||'',a.serie||'',a.loc,a.depto||'',a.cc||'',a.status,a.resp,a.valor||''])
+  ];
+  baixarCSV('estoque_ativos_'+hoje+'.csv', linhas);
+  showToast('CSV exportado com '+lista.length+' ativos');
+}
+function exportarMovCSV(){
+  if(!movimentacoes.length){ showToast('Nenhuma movimentação para exportar'); return; }
+  const hoje=new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+  const linhas=[
+    ['TAG','Ativo','Local anterior','Local novo','Departamento anterior','Departamento novo','Centro de Custo','Responsável','Motivo','Data'],
+    ...movimentacoes.map(m=>[m.tag,m.nome,m.locAntes,m.locDepois,m.deptoAntes||'',m.deptoDepois||'',m.cc||'',m.resp,m.motivo||'',m.data])
+  ];
+  baixarCSV('movimentacoes_'+hoje+'.csv', linhas);
+  showToast('CSV exportado com '+movimentacoes.length+' movimentações');
 }
 
 // ── TOAST ──
