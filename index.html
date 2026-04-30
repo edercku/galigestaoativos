@@ -1341,8 +1341,10 @@ let transAtivo = null;
 
 // ── TRANSFERÊNCIA ──
 function openTransModal(tagInicial){
+  transAtivo=null;
   document.getElementById('trans-modal').style.display='flex';
   transGoStep(1);
+  updateDeptoSelects();
   const inp=document.getElementById('trans-tag-input');
   inp.value=tagInicial||'';
   document.getElementById('trans-scan-error').style.display='none';
@@ -1399,7 +1401,12 @@ function transConfirmarScan(){
   transGoStep(2);
 }
 function transVoltarScan(){ transGoStep(1); }
+function transUpdateDepto(){
+  // Chamado ao mudar o local — garante que o select de departamentos está populado
+  updateDeptoSelects();
+}
 function transExecutar(){
+  if(!transAtivo){ showToast('⚠ Ativo não identificado. Volte ao passo 1.'); transGoStep(1); return; }
   const novoLoc=document.getElementById('trans-novo-loc').value;
   if(!novoLoc){ showToast('Selecione o novo local'); return; }
   const novoCc=document.getElementById('trans-novo-cc').value.trim();
@@ -1435,6 +1442,12 @@ function transExecutar(){
       ${motivo?`<div style="grid-column:1/-1"><div style="font-size:10px;color:var(--g-hint)">Motivo</div><div style="font-size:12px">${motivo}</div></div>`:''}
     </div>`;
   transGoStep(3);
+  // Limpa filtros do estoque para o item transferido continuar visível
+  const locFiltro=document.getElementById('inv-filter-loc');
+  if(locFiltro) locFiltro.value='';
+  const searchFiltro=document.getElementById('inv-search');
+  // só limpa busca se era a própria TAG que estava buscada
+  if(searchFiltro && searchFiltro.value.toUpperCase()===a.tag) searchFiltro.value='';
   // Atualiza inventário e dashboard
   filteredAtivos=[...ativos]; filterTable(); renderDashboard(); renderLocProgress(); renderMovimentacoes();
 }
