@@ -521,14 +521,24 @@ tr:hover td{background:var(--g-bg)}
             </select>
           </div>
           <!-- Abas -->
-          <div style="display:flex;border-bottom:1px solid var(--g-border)">
+          <div style="display:flex;border-bottom:1px solid var(--g-border);overflow-x:auto">
             <button id="os-tab-todas"    class="os-tab os-tab-active" onclick="switchOSTab('todas')">Todas <span id="os-tab-n-todas" class="tab-count">0</span></button>
             <button id="os-tab-prog"     class="os-tab" onclick="switchOSTab('prog')">Programadas <span id="os-tab-n-prog" class="tab-count">0</span></button>
             <button id="os-tab-andamento" class="os-tab" onclick="switchOSTab('andamento')">Em andamento <span id="os-tab-n-andamento" class="tab-count">0</span></button>
             <button id="os-tab-concluido" class="os-tab" onclick="switchOSTab('concluido')">Realizadas <span id="os-tab-n-concluido" class="tab-count">0</span></button>
             <button id="os-tab-alertas"  class="os-tab os-tab-alert" onclick="switchOSTab('alertas')">⚠ Alertas <span id="os-tab-n-alertas" class="tab-count">0</span></button>
+            <button id="os-tab-planos"   class="os-tab" style="color:var(--g-purple)" onclick="switchOSTab('planos')">📋 Planos <span id="os-tab-n-planos" class="tab-count">0</span></button>
           </div>
+          <!-- Lista OS -->
           <div id="os-list"></div>
+          <!-- Planos de Manutenção -->
+          <div id="os-planos-section" style="display:none">
+            <div style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--g-border)">
+              <span style="font-size:12px;color:var(--g-hint)" id="planos-count-label">0 planos cadastrados</span>
+              <button class="btn btn-primary" style="font-size:11px;padding:5px 12px" onclick="abrirModalPlano(null)">+ Novo plano</button>
+            </div>
+            <div id="planos-list"></div>
+          </div>
         </div>
       </div>
 
@@ -1007,6 +1017,79 @@ tr:hover td{background:var(--g-bg)}
     <div style="padding:0 18px 18px;display:flex;gap:8px;justify-content:flex-end">
       <button class="btn" onclick="fecharModalUsuario()">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarUsuario()">Salvar usuário</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL DE PLANO DE MANUTENÇÃO ── -->
+<div id="plano-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:center;justify-content:center;padding:20px 0;overflow-y:auto">
+  <div style="background:var(--g-surface);border-radius:16px;width:500px;max-width:96vw;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,.3)">
+    <div style="background:#16192A;padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:16px">📋</span>
+        <span style="font-size:14px;font-weight:700;color:#fff" id="plano-modal-title">Novo plano de manutenção</span>
+      </div>
+      <button onclick="fecharModalPlano()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:18px;cursor:pointer">✕</button>
+    </div>
+    <div style="padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group full" style="grid-column:1/-1">
+        <label class="form-label">Nome do plano *</label>
+        <input class="form-input" id="pl-nome" placeholder="ex: Revisão preventiva mensal — Câmera FLIR">
+      </div>
+      <div class="form-group full" style="grid-column:1/-1">
+        <label class="form-label">Ativo (TAG) *</label>
+        <div style="display:flex;gap:6px">
+          <input class="form-input" id="pl-tag" placeholder="ex: GA-000836" style="flex:1;font-family:monospace;font-weight:600;text-transform:uppercase" oninput="this.value=this.value.toUpperCase();plPreviewAtivo()">
+          <button class="btn" style="font-size:11px;padding:6px 10px" onclick="abrirScanModal('plano')">📷 Scan</button>
+        </div>
+        <div id="pl-ativo-preview" style="margin-top:4px;font-size:11px;color:var(--g-success)"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tipo de manutenção *</label>
+        <select class="form-select" id="pl-tipo">
+          <option value="Preventiva">Preventiva</option>
+          <option value="Calibração">Calibração</option>
+          <option value="Inspeção">Inspeção</option>
+          <option value="Lubrificação">Lubrificação</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Periodicidade *</label>
+        <select class="form-select" id="pl-period">
+          <option value="Mensal">Mensal (a cada 1 mês)</option>
+          <option value="Trimestral">Trimestral (a cada 3 meses)</option>
+          <option value="Semestral">Semestral (a cada 6 meses)</option>
+          <option value="Anual">Anual (a cada 12 meses)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Última execução *</label>
+        <input class="form-input" type="date" id="pl-dt-ultima">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Alertar com antecedência</label>
+        <select class="form-select" id="pl-antec">
+          <option value="7">7 dias antes</option>
+          <option value="15">15 dias antes</option>
+          <option value="30">30 dias antes</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Responsável</label>
+        <input class="form-input" id="pl-resp" placeholder="Nome do técnico">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Centro de custo</label>
+        <input class="form-input" id="pl-cc" placeholder="ex: 212500" style="font-family:monospace">
+      </div>
+      <div class="form-group full" style="grid-column:1/-1">
+        <label class="form-label">Descrição / Checklist</label>
+        <textarea class="form-input" id="pl-desc" rows="2" placeholder="Itens a verificar, procedimentos, peças..." style="resize:vertical;font-family:inherit"></textarea>
+      </div>
+    </div>
+    <div style="padding:0 18px 18px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="fecharModalPlano()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarPlano()">Salvar plano</button>
     </div>
   </div>
 </div>
@@ -1901,7 +1984,15 @@ function switchOSTab(tab){
   osTabAtual=tab;
   document.querySelectorAll('.os-tab').forEach(t=>t.classList.remove('os-tab-active'));
   document.getElementById('os-tab-'+tab)?.classList.add('os-tab-active');
-  renderOS(tab);
+  const isList=tab!=='planos';
+  const osList_el=document.getElementById('os-list');
+  const planos_el=document.getElementById('os-planos-section');
+  const search_el=document.querySelector('#screen-manutencao .search-input');
+  const filters=document.getElementById('os-filter-tipo')?.parentElement;
+  if(osList_el) osList_el.style.display=isList?'':'none';
+  if(planos_el) planos_el.style.display=isList?'none':'block';
+  if(search_el) search_el.style.display=isList?'':'none';
+  if(tab==='planos') renderPlanos(); else renderOS(tab);
 }
 
 function renderOS(tab){
@@ -2441,6 +2532,150 @@ function removerUsuario(id){
   renderUsuarios();
 }
 
+// ── PLANOS DE MANUTENÇÃO ──
+let planosManutencao = [];
+let nextPlanoId = 1;
+let editingPlanoId = null;
+const periodMeses = {Mensal:1, Trimestral:3, Semestral:6, Anual:12};
+
+function calcProximaManutencao(plano){
+  if(!plano.dtUltima) return null;
+  const d = new Date(plano.dtUltima+'T12:00:00');
+  d.setMonth(d.getMonth() + (periodMeses[plano.period]||1));
+  return d;
+}
+function planoAlerta(plano){
+  const prox = calcProximaManutencao(plano);
+  if(!prox) return null;
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const dias = Math.round((prox - hoje)/(1000*60*60*24));
+  const antec = parseInt(plano.antec)||7;
+  if(dias < 0)       return {tipo:'vencida', dias:Math.abs(dias), cor:'var(--g-danger)',  label:'Vencida há '+Math.abs(dias)+'d'};
+  if(dias <= antec)  return {tipo:'urgente', dias, cor:'var(--g-warn)',   label:'Vence em '+dias+'d'};
+  return                    {tipo:'ok',      dias, cor:'var(--g-success)',label:'OK — '+dias+'d'};
+}
+function renderPlanos(){
+  const el = document.getElementById('planos-list');
+  if(!el) return;
+  const lbl = document.getElementById('planos-count-label');
+  if(lbl) lbl.textContent = planosManutencao.length + ' plano(s) cadastrado(s)';
+  const nPlanos = document.getElementById('os-tab-n-planos');
+  if(nPlanos) nPlanos.textContent = planosManutencao.length;
+
+  if(!planosManutencao.length){
+    el.innerHTML='<div style="padding:32px;text-align:center;color:var(--g-hint);font-size:13px">Nenhum plano cadastrado.<br><span style="font-size:11px">Clique em "+ Novo plano" para configurar manutenções periódicas.</span></div>';
+    return;
+  }
+  el.innerHTML = planosManutencao.map(p=>{
+    const alerta = planoAlerta(p);
+    const prox   = calcProximaManutencao(p);
+    const proxStr = prox ? prox.toLocaleDateString('pt-BR') : '—';
+    const a = ativos.find(x=>x.tag===p.tag);
+    return `
+    <div style="padding:14px 16px;border-bottom:1px solid var(--g-border);display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start">
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="font-size:13px;font-weight:600;color:var(--g-text)">${p.nome}</span>
+          <span style="font-size:10px;background:var(--g-purple-light);color:var(--g-purple);padding:2px 7px;border-radius:4px;font-weight:600">${p.period}</span>
+          <span style="font-size:10px;color:var(--g-hint)">${p.tipo}</span>
+        </div>
+        <div style="font-size:11px;color:var(--g-muted);margin-bottom:6px">
+          <span style="font-family:monospace;color:var(--g-orange)">${p.tag}</span>
+          ${a?' — '+a.nome:''}
+          ${p.resp?' · Resp: '+p.resp:''}
+          ${p.cc?' · CC: '+p.cc:''}
+        </div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap">
+          <div style="font-size:11px;color:var(--g-hint)">Última execução: <strong style="color:var(--g-text)">${p.dtUltima?new Date(p.dtUltima+'T12:00:00').toLocaleDateString('pt-BR'):'—'}</strong></div>
+          <div style="font-size:11px;color:var(--g-hint)">Próxima: <strong style="color:${alerta?.cor||'var(--g-text)'}">${proxStr}</strong></div>
+          ${alerta?`<span style="font-size:11px;font-weight:700;color:${alerta.cor}">⚠ ${alerta.label}</span>`:''}
+        </div>
+        ${p.desc?`<div style="font-size:11px;color:var(--g-hint);margin-top:4px">${p.desc}</div>`:''}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+        <div style="width:10px;height:10px;border-radius:50%;background:${alerta?.cor||'var(--g-border2)'}"></div>
+        <button class="loc-btn" onclick="abrirModalPlano(${p.id})">✏ Editar</button>
+        <button class="loc-btn" onclick="registrarExecucao(${p.id})" style="color:var(--g-success);border-color:var(--g-success)">✓ Executado</button>
+        <button class="loc-btn danger" onclick="removerPlano(${p.id})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Atualiza contador de alertas incluindo planos
+  atualizarAlertasTotal();
+}
+function atualizarAlertasTotal(){
+  const alertOS = osList.filter(o=>osAlerta(o)!==null).length;
+  const alertPl = planosManutencao.filter(p=>{const a=planoAlerta(p);return a&&a.tipo!=='ok';}).length;
+  const total = alertOS + alertPl;
+  const el = document.getElementById('os-m-alert'); if(el) el.textContent=total;
+  const tab = document.getElementById('os-tab-n-alertas'); if(tab) tab.textContent=alertOS;
+}
+function abrirModalPlano(id){
+  editingPlanoId = id;
+  const p = id ? planosManutencao.find(x=>x.id===id) : null;
+  document.getElementById('plano-modal-title').textContent = p ? 'Editar plano' : 'Novo plano de manutenção';
+  document.getElementById('pl-nome').value     = p?.nome||'';
+  document.getElementById('pl-tag').value      = p?.tag||'';
+  document.getElementById('pl-tipo').value     = p?.tipo||'Preventiva';
+  document.getElementById('pl-period').value   = p?.period||'Mensal';
+  document.getElementById('pl-dt-ultima').value= p?.dtUltima||new Date().toISOString().split('T')[0];
+  document.getElementById('pl-antec').value    = p?.antec||'7';
+  document.getElementById('pl-resp').value     = p?.resp||'';
+  document.getElementById('pl-cc').value       = p?.cc||'';
+  document.getElementById('pl-desc').value     = p?.desc||'';
+  plPreviewAtivo();
+  document.getElementById('plano-modal').style.display='flex';
+}
+function fecharModalPlano(){ document.getElementById('plano-modal').style.display='none'; }
+function plPreviewAtivo(){
+  const tag=(document.getElementById('pl-tag')?.value||'').trim();
+  const el=document.getElementById('pl-ativo-preview');
+  if(!el) return;
+  const a=ativos.find(x=>x.tag===tag);
+  el.textContent=a?'✓ '+a.nome+' — '+a.loc:'';
+  el.style.color=a?'var(--g-success)':'var(--g-danger)';
+}
+function salvarPlano(){
+  const nome  = document.getElementById('pl-nome').value.trim();
+  const tag   = document.getElementById('pl-tag').value.trim().toUpperCase();
+  const tipo  = document.getElementById('pl-tipo').value;
+  const period= document.getElementById('pl-period').value;
+  const dtUlt = document.getElementById('pl-dt-ultima').value;
+  const antec = document.getElementById('pl-antec').value;
+  if(!nome){ showToast('⚠ Informe o nome do plano'); return; }
+  if(!tag){  showToast('⚠ Informe a TAG do ativo');  return; }
+  if(!dtUlt){ showToast('⚠ Informe a data da última execução'); return; }
+  if(editingPlanoId){
+    const p=planosManutencao.find(x=>x.id===editingPlanoId);
+    if(p){ p.nome=nome;p.tag=tag;p.tipo=tipo;p.period=period;p.dtUltima=dtUlt;p.antec=antec;
+           p.resp=document.getElementById('pl-resp').value;
+           p.cc=document.getElementById('pl-cc').value;
+           p.desc=document.getElementById('pl-desc').value; }
+  } else {
+    planosManutencao.push({id:nextPlanoId++,nome,tag,tipo,period,dtUltima:dtUlt,antec,
+      resp:document.getElementById('pl-resp').value,
+      cc:document.getElementById('pl-cc').value,
+      desc:document.getElementById('pl-desc').value});
+  }
+  fecharModalPlano();
+  renderPlanos();
+  showToast('Plano "'+ nome +'" salvo com sucesso!');
+}
+function removerPlano(id){
+  planosManutencao=planosManutencao.filter(p=>p.id!==id);
+  renderPlanos();
+  showToast('Plano removido');
+}
+function registrarExecucao(id){
+  const p=planosManutencao.find(x=>x.id===id);
+  if(!p) return;
+  const hoje=new Date().toISOString().split('T')[0];
+  p.dtUltima=hoje;
+  renderPlanos();
+  showToast('✓ Execução registrada para hoje — próxima calculada automaticamente');
+}
+
 // ── SCANNER DE CÂMERA ──
 let html5QrCode = null;
 let scanCallback = null; // 'trans' | 'os'
@@ -2494,6 +2729,9 @@ function aplicarTagLida(tag) {
   } else if (scanCallback === 'os') {
     document.getElementById('os-tag').value = tag;
     osPreviewAtivo(tag);
+  } else if (scanCallback === 'plano') {
+    document.getElementById('pl-tag').value = tag;
+    plPreviewAtivo();
   }
   scanCallback = null;
 }
