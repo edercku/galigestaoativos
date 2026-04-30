@@ -205,6 +205,19 @@ tr:hover td{background:var(--g-bg)}
 .cat-Veículos{background:#EDFAF3;color:#1A7F4B}
 .cat-Infraestrutura{background:#F0EBF8;color:#6B3FA0}
 .cat-Mobiliário{background:#F0F1F4;color:#5A5E6B}
+.os-tab{background:none;border:none;border-bottom:2px solid transparent;padding:10px 16px;font-size:12px;font-weight:500;color:var(--g-muted);cursor:pointer;transition:.15s;white-space:nowrap}
+.os-tab:hover{color:var(--g-text)}
+.os-tab-active{color:var(--g-orange)!important;border-bottom-color:var(--g-orange)!important;font-weight:600!important}
+.os-tab-alert{color:var(--g-danger)!important}
+.tab-count{background:var(--g-surface2);border-radius:10px;padding:1px 6px;font-size:10px;margin-left:4px}
+.os-row{padding:14px 16px;border-bottom:1px solid var(--g-border);display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;cursor:pointer;transition:.1s}
+.os-row:hover{background:var(--g-surface2)}
+.os-row:last-child{border-bottom:none}
+.os-row-left{display:flex;flex-direction:column;gap:4px;min-width:90px}
+.os-row-mid{display:flex;flex-direction:column;gap:3px}
+.os-row-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:100px}
+.os-detail-panel{display:none;background:var(--g-surface2);border-bottom:1px solid var(--g-border);padding:14px 16px}
+.os-detail-panel.open{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 </style>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <!-- ── TELA DE LOGIN ── -->
@@ -469,14 +482,54 @@ tr:hover td{background:var(--g-bg)}
 
       <!-- MANUTENÇÃO -->
       <div id="screen-manutencao" class="screen">
-        <div class="filter-row" id="os-filters">
-          <div class="filter-chip active" onclick="filterOS('Todos',this)">Todos (0)</div>
-          <div class="filter-chip" onclick="filterOS('Aberto',this)">Aberto (0)</div>
-          <div class="filter-chip" onclick="filterOS('Em andamento',this)">Em andamento (0)</div>
-          <div class="filter-chip" onclick="filterOS('Concluído',this)">Concluído (0)</div>
-          <div class="filter-chip" style="border-color:#EEB0AE;color:var(--g-danger)" onclick="filterOS('Crítico',this)">⚠ Crítico (0)</div>
+        <!-- Métricas -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
+          <div class="card" style="padding:14px 16px;border-top:3px solid var(--g-orange)">
+            <div style="font-size:11px;color:var(--g-hint);margin-bottom:4px">Total de OS</div>
+            <div style="font-size:26px;font-weight:700;color:var(--g-text)" id="os-m-total">0</div>
+          </div>
+          <div class="card" style="padding:14px 16px;border-top:3px solid var(--g-info)">
+            <div style="font-size:11px;color:var(--g-hint);margin-bottom:4px">Programadas</div>
+            <div style="font-size:26px;font-weight:700;color:var(--g-info)" id="os-m-prog">0</div>
+          </div>
+          <div class="card" style="padding:14px 16px;border-top:3px solid var(--g-warn)">
+            <div style="font-size:11px;color:var(--g-hint);margin-bottom:4px">Em andamento</div>
+            <div style="font-size:26px;font-weight:700;color:var(--g-warn)" id="os-m-and">0</div>
+          </div>
+          <div class="card" style="padding:14px 16px;border-top:3px solid var(--g-danger)">
+            <div style="font-size:11px;color:var(--g-hint);margin-bottom:4px">⚠ Alertas</div>
+            <div style="font-size:26px;font-weight:700;color:var(--g-danger)" id="os-m-alert">0</div>
+          </div>
         </div>
-        <div class="card" id="os-list"></div>
+
+        <!-- Busca + abas -->
+        <div class="card">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--g-border);display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <input class="search-input" id="os-search" placeholder="Buscar por ativo, TAG, responsável..." style="flex:1;min-width:200px;font-size:12px" oninput="renderOS(osTabAtual)">
+            <select class="form-select" id="os-filter-tipo" style="width:140px;font-size:12px" onchange="renderOS(osTabAtual)">
+              <option value="">Todos os tipos</option>
+              <option value="Corretiva">Corretiva</option>
+              <option value="Preventiva">Preventiva</option>
+              <option value="Calibração">Calibração</option>
+            </select>
+            <select class="form-select" id="os-filter-prior" style="width:130px;font-size:12px" onchange="renderOS(osTabAtual)">
+              <option value="">Todas prioridades</option>
+              <option value="Crítica">Crítica</option>
+              <option value="Alta">Alta</option>
+              <option value="Média">Média</option>
+              <option value="Baixa">Baixa</option>
+            </select>
+          </div>
+          <!-- Abas -->
+          <div style="display:flex;border-bottom:1px solid var(--g-border)">
+            <button id="os-tab-todas"    class="os-tab os-tab-active" onclick="switchOSTab('todas')">Todas <span id="os-tab-n-todas" class="tab-count">0</span></button>
+            <button id="os-tab-prog"     class="os-tab" onclick="switchOSTab('prog')">Programadas <span id="os-tab-n-prog" class="tab-count">0</span></button>
+            <button id="os-tab-andamento" class="os-tab" onclick="switchOSTab('andamento')">Em andamento <span id="os-tab-n-andamento" class="tab-count">0</span></button>
+            <button id="os-tab-concluido" class="os-tab" onclick="switchOSTab('concluido')">Realizadas <span id="os-tab-n-concluido" class="tab-count">0</span></button>
+            <button id="os-tab-alertas"  class="os-tab os-tab-alert" onclick="switchOSTab('alertas')">⚠ Alertas <span id="os-tab-n-alertas" class="tab-count">0</span></button>
+          </div>
+          <div id="os-list"></div>
+        </div>
       </div>
 
       <!-- RASTREAMENTO -->
@@ -983,8 +1036,8 @@ tr:hover td{background:var(--g-bg)}
 </div>
 
 <!-- ── MODAL DE NOVA OS ── -->
-<div id="os-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;align-items:center;justify-content:center">
-  <div style="background:var(--g-surface);border-radius:16px;width:460px;max-width:96vw;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,.3)">
+<div id="os-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;align-items:center;justify-content:center;overflow-y:auto;padding:20px 0">
+  <div style="background:var(--g-surface);border-radius:16px;width:520px;max-width:96vw;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,.3)">
     <div style="background:#16192A;padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
       <div style="display:flex;align-items:center;gap:10px">
         <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="#F07A00" stroke-width="1.8"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
@@ -995,12 +1048,15 @@ tr:hover td{background:var(--g-bg)}
         <button onclick="closeOSModal()" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:18px;cursor:pointer;line-height:1">✕</button>
       </div>
     </div>
-    <div style="padding:20px 18px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div style="padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <!-- Linha 1 -->
       <div class="form-group">
         <label class="form-label">Tipo *</label>
         <select class="form-select" id="os-tipo">
           <option value="Corretiva">Corretiva</option>
           <option value="Preventiva">Preventiva</option>
+          <option value="Calibração">Calibração</option>
+          <option value="Inspeção">Inspeção</option>
         </select>
       </div>
       <div class="form-group">
@@ -1012,6 +1068,7 @@ tr:hover td{background:var(--g-bg)}
           <option value="Baixa">Baixa</option>
         </select>
       </div>
+      <!-- TAG -->
       <div class="form-group full" style="grid-column:1/-1">
         <label class="form-label">Ativo (TAG) *</label>
         <div style="display:flex;gap:6px">
@@ -1020,18 +1077,45 @@ tr:hover td{background:var(--g-bg)}
         </div>
         <div id="os-ativo-preview" style="margin-top:5px;font-size:11px;color:var(--g-success)"></div>
       </div>
+      <!-- Descrição -->
       <div class="form-group full" style="grid-column:1/-1">
-        <label class="form-label">Descrição do problema *</label>
+        <label class="form-label">Descrição do problema / serviço *</label>
         <textarea class="form-input" id="os-desc" rows="2" placeholder="Descreva o problema ou a atividade a ser realizada..." style="resize:vertical;font-family:inherit"></textarea>
       </div>
+      <!-- Responsável + CC -->
       <div class="form-group">
         <label class="form-label">Responsável técnico</label>
         <input class="form-input" id="os-resp" placeholder="Nome do técnico">
       </div>
       <div class="form-group">
+        <label class="form-label">Centro de custo</label>
+        <input class="form-input" id="os-cc" placeholder="ex: 212500" style="font-family:monospace">
+      </div>
+      <!-- Datas -->
+      <div class="form-group">
         <label class="form-label">Data prevista conclusão</label>
         <input class="form-input" type="date" id="os-dt-prev">
       </div>
+      <div class="form-group">
+        <label class="form-label">Tempo estimado (horas)</label>
+        <input class="form-input" id="os-tempo" placeholder="ex: 4" type="number" min="0">
+      </div>
+      <!-- Valor + Periodicidade -->
+      <div class="form-group">
+        <label class="form-label">Valor estimado (R$)</label>
+        <input class="form-input" id="os-valor" placeholder="ex: 850,00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Periodicidade</label>
+        <select class="form-select" id="os-period">
+          <option value="">Única / sem recorrência</option>
+          <option value="Mensal">Mensal</option>
+          <option value="Trimestral">Trimestral</option>
+          <option value="Semestral">Semestral</option>
+          <option value="Anual">Anual</option>
+        </select>
+      </div>
+      <!-- Observações -->
       <div class="form-group full" style="grid-column:1/-1">
         <label class="form-label">Observações adicionais</label>
         <input class="form-input" id="os-obs" placeholder="Peças necessárias, acesso especial, etc.">
@@ -1506,7 +1590,7 @@ function nav(id,el){
   ab.textContent = btnLabels[id]||'+ Novo';
   ab.style.display = btnLabels[id]==='' ? 'none' : '';
   if(id==='inventario'){ currentPage=1; filterTable(); }
-  if(id==='manutencao') renderOS('Todos');
+  if(id==='manutencao') renderOS(osTabAtual);
   if(id==='rastreamento'){renderRastr();renderMovimentacoes();}
   if(id==='relatorios'){renderRel();renderRelEstoque();renderMovimentacoes();}
   if(id==='localizacoes'){ renderLocList(); renderDeptos(); }
@@ -1531,6 +1615,10 @@ function openOSModal(tag){
   document.getElementById('os-desc').value='';
   document.getElementById('os-resp').value='';
   document.getElementById('os-obs').value='';
+  const ccEl=document.getElementById('os-cc'); if(ccEl) ccEl.value='';
+  const tempoEl=document.getElementById('os-tempo'); if(tempoEl) tempoEl.value='';
+  const valorEl=document.getElementById('os-valor'); if(valorEl) valorEl.value='';
+  const periodEl=document.getElementById('os-period'); if(periodEl) periodEl.value='';
   const hoje=new Date(); hoje.setDate(hoje.getDate()+3);
   document.getElementById('os-dt-prev').value=hoje.toISOString().split('T')[0];
   osPreviewAtivo(tag);
@@ -1549,6 +1637,10 @@ function osAbrirScan(){ closeOSModal(); openTransModal(''); }
 function salvarOS(){
   const tag=document.getElementById('os-tag').value.trim();
   const desc=document.getElementById('os-desc').value.trim()||'Aguardando diagnóstico';
+  const cc=document.getElementById('os-cc')?.value||'';
+  const tempo=document.getElementById('os-tempo')?.value||'';
+  const valor=document.getElementById('os-valor')?.value||'';
+  const period=document.getElementById('os-period')?.value||'';
   if(!tag){showToast('Informe a TAG do ativo');return;}
   const a=ativos.find(x=>x.tag===tag);
   if(!a){showToast('TAG não encontrada: '+tag);return;}
@@ -1562,6 +1654,7 @@ function salvarOS(){
     prior:document.getElementById('os-prior').value,
     status:'Aberto',
     resp:document.getElementById('os-resp').value||'—',
+    cc, tempo, valor, period,
     data:dtStr,
     dtPrev:document.getElementById('os-dt-prev').value,
     desc, obs:document.getElementById('os-obs').value
@@ -1791,39 +1884,127 @@ function simulateImport(){
 
 // ── OS ──
 const osList=[];
+let osTabAtual='todas';
 function priorBadge(p){const m={Crítica:'danger',Alta:'warning',Média:'info',Baixa:'neutral'};return`<span class="badge badge-${m[p]||'neutral'}">${p}</span>`;}
 function stBadge(s){const m={Aberto:'info','Em andamento':'warning',Concluído:'success'};return`<span class="badge badge-${m[s]||'neutral'}">${s}</span>`;}
-function renderOS(filter){
-  // Atualiza contadores dos chips
-  const chips=[
-    {f:'Todos',   n:osList.length},
-    {f:'Aberto',  n:osList.filter(o=>o.status==='Aberto').length},
-    {f:'Em andamento', n:osList.filter(o=>o.status==='Em andamento').length},
-    {f:'Concluído',n:osList.filter(o=>o.status==='Concluído').length},
-    {f:'Crítico', n:osList.filter(o=>o.prior==='Crítica').length},
-  ];
-  document.querySelectorAll('#os-filters .filter-chip').forEach((el,i)=>{
-    const {f,n}=chips[i]||{};
-    if(f) el.textContent=(f==='Crítico'?'⚠ Crítico':f)+' ('+n+')';
-  });
-  const lista=filter==='Todos'?osList:filter==='Crítico'?osList.filter(o=>o.prior==='Crítica'):osList.filter(o=>o.status===filter);
-  if(!lista.length){document.getElementById('os-list').innerHTML='<div style="padding:32px;text-align:center;color:var(--g-hint);font-size:13px">Nenhuma ordem de serviço encontrada</div>';return;}
-  document.getElementById('os-list').innerHTML=lista.map((o,i)=>`
-    <div class="os-header" onclick="toggleOS(${i})">
-      <span class="os-num">${o.num}</span>${priorBadge(o.prior)}
-      <span class="os-desc">${o.ativo} <span style="color:var(--g-hint);font-size:11px">(${o.loc})</span> — ${o.desc.substring(0,45)}...</span>
-      ${stBadge(o.status)}<span id="exp-${i}" style="font-size:11px;color:var(--g-hint)">▸</span>
-    </div>
-    <div class="os-detail" id="det-${i}">
-      <div><div class="os-field">Tipo</div><div class="os-val">${o.tipo}</div></div>
-      <div><div class="os-field">Localização</div><div class="os-val">${o.loc}</div></div>
-      <div><div class="os-field">Responsável</div><div class="os-val">${o.resp}</div></div>
-      <div><div class="os-field">Data abertura</div><div class="os-val">${o.data}</div></div>
-      <div style="grid-column:1/-1"><div class="os-field">Descrição</div><div class="os-val">${o.desc}</div></div>
-    </div>`).join('');
+
+function osAlerta(o){
+  if(o.status==='Concluído') return null;
+  if(!o.dtPrev) return null;
+  const dias=Math.round((new Date(o.dtPrev)-new Date())/(1000*60*60*24));
+  if(dias<0)  return {tipo:'vencida', label:'Vencida '+Math.abs(dias)+'d', cor:'var(--g-danger)'};
+  if(dias<=3) return {tipo:'urgente', label:'Vence em '+dias+'d',          cor:'var(--g-warn)'};
+  return null;
 }
-function toggleOS(i){const d=document.getElementById('det-'+i);const e=document.getElementById('exp-'+i);e.textContent=d.classList.toggle('open')?'▾':'▸';}
-function filterOS(f,el){document.querySelectorAll('#os-filters .filter-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');renderOS(f);}
+
+function switchOSTab(tab){
+  osTabAtual=tab;
+  document.querySelectorAll('.os-tab').forEach(t=>t.classList.remove('os-tab-active'));
+  document.getElementById('os-tab-'+tab)?.classList.add('os-tab-active');
+  renderOS(tab);
+}
+
+function renderOS(tab){
+  tab=tab||osTabAtual||'todas';
+  osTabAtual=tab;
+  const q=(document.getElementById('os-search')?.value||'').toLowerCase();
+  const tipo=(document.getElementById('os-filter-tipo')?.value||'');
+  const prior=(document.getElementById('os-filter-prior')?.value||'');
+
+  // Filtros por aba
+  let lista=[...osList];
+  if(tab==='prog')      lista=lista.filter(o=>o.status==='Aberto');
+  if(tab==='andamento') lista=lista.filter(o=>o.status==='Em andamento');
+  if(tab==='concluido') lista=lista.filter(o=>o.status==='Concluído');
+  if(tab==='alertas')   lista=lista.filter(o=>osAlerta(o)!==null);
+
+  // Filtros de busca
+  if(q)     lista=lista.filter(o=>(o.num+o.ativo+o.tag+o.resp+o.desc).toLowerCase().includes(q));
+  if(tipo)  lista=lista.filter(o=>o.tipo===tipo);
+  if(prior) lista=lista.filter(o=>o.prior===prior);
+
+  // Contagens nas abas
+  const alertCount=osList.filter(o=>osAlerta(o)!==null).length;
+  const elTodas=document.getElementById('os-tab-n-todas'); if(elTodas) elTodas.textContent=osList.length;
+  const elProg=document.getElementById('os-tab-n-prog'); if(elProg) elProg.textContent=osList.filter(o=>o.status==='Aberto').length;
+  const elAnd=document.getElementById('os-tab-n-andamento'); if(elAnd) elAnd.textContent=osList.filter(o=>o.status==='Em andamento').length;
+  const elConc=document.getElementById('os-tab-n-concluido'); if(elConc) elConc.textContent=osList.filter(o=>o.status==='Concluído').length;
+  const elAlert=document.getElementById('os-tab-n-alertas'); if(elAlert) elAlert.textContent=alertCount;
+
+  // Métricas
+  const mTotal=document.getElementById('os-m-total'); if(mTotal) mTotal.textContent=osList.length;
+  const mProg=document.getElementById('os-m-prog');   if(mProg) mProg.textContent=osList.filter(o=>o.status==='Aberto').length;
+  const mAnd=document.getElementById('os-m-and');     if(mAnd) mAnd.textContent=osList.filter(o=>o.status==='Em andamento').length;
+  const mAlert=document.getElementById('os-m-alert'); if(mAlert) mAlert.textContent=alertCount;
+
+  const el=document.getElementById('os-list');
+  if(!el) return;
+  if(!lista.length){
+    el.innerHTML='<div style="padding:32px;text-align:center;color:var(--g-hint);font-size:13px">Nenhuma ordem de serviço encontrada</div>';
+    return;
+  }
+  el.innerHTML=lista.map((o,i)=>{
+    const alerta=osAlerta(o);
+    return `
+    <div class="os-row" onclick="toggleOSRow(${i})">
+      <div class="os-row-left">
+        <span style="font-family:monospace;font-size:11px;font-weight:700;color:var(--g-orange)">${o.num}</span>
+        ${stBadge(o.status)}
+        ${alerta?`<span style="font-size:10px;font-weight:600;color:${alerta.cor}">⚠ ${alerta.label}</span>`:''}
+      </div>
+      <div class="os-row-mid">
+        <div style="font-size:13px;font-weight:600;color:var(--g-text)">${o.ativo} <span style="font-family:monospace;font-size:10px;color:var(--g-hint)">(${o.tag})</span></div>
+        <div style="font-size:11px;color:var(--g-muted)">${o.desc.substring(0,80)}${o.desc.length>80?'...':''}</div>
+        <div style="display:flex;gap:8px;margin-top:2px;flex-wrap:wrap">
+          ${priorBadge(o.prior)}
+          <span style="font-size:10px;color:var(--g-hint)">${o.tipo}</span>
+          ${o.period?`<span style="font-size:10px;color:var(--g-purple);background:var(--g-purple-light);padding:1px 6px;border-radius:4px">${o.period}</span>`:''}
+        </div>
+      </div>
+      <div class="os-row-right">
+        <span style="font-size:11px;color:var(--g-hint)">${o.data}</span>
+        ${o.dtPrev?`<span style="font-size:11px;color:${alerta?.tipo==='vencida'?'var(--g-danger)':alerta?.tipo==='urgente'?'var(--g-warn)':'var(--g-muted)'}">Prev: ${new Date(o.dtPrev).toLocaleDateString('pt-BR')}</span>`:''}
+        ${o.valor?`<span style="font-size:11px;font-weight:600;color:var(--g-text)">R$ ${o.valor}</span>`:''}
+        ${o.resp&&o.resp!=='—'?`<span style="font-size:10px;color:var(--g-hint)">${o.resp}</span>`:''}
+      </div>
+    </div>
+    <div class="os-detail-panel" id="osd-${i}">
+      <div><div style="font-size:10px;color:var(--g-hint);margin-bottom:3px">Tipo</div><div style="font-size:12px">${o.tipo}</div></div>
+      <div><div style="font-size:10px;color:var(--g-hint);margin-bottom:3px">Responsável</div><div style="font-size:12px">${o.resp||'—'}</div></div>
+      <div><div style="font-size:10px;color:var(--g-hint);margin-bottom:3px">Centro de custo</div><div style="font-size:12px;font-family:monospace">${o.cc||'—'}</div></div>
+      <div><div style="font-size:10px;color:var(--g-hint);margin-bottom:3px">Tempo estimado</div><div style="font-size:12px">${o.tempo?o.tempo+'h':'—'}</div></div>
+      <div><div style="font-size:10px;color:var(--g-hint);margin-bottom:3px">Valor estimado</div><div style="font-size:12px;font-weight:600">${o.valor?'R$ '+o.valor:'—'}</div></div>
+      <div><div style="font-size:10px;color:var(--g-hint);margin-bottom:3px">Periodicidade</div><div style="font-size:12px">${o.period||'Única'}</div></div>
+      <div><div style="font-size:10px;color:var(--g-hint);margin-bottom:3px">Data abertura</div><div style="font-size:12px">${o.data}</div></div>
+      <div><div style="font-size:10px;color:var(--g-hint);margin-bottom:3px">Localização</div><div style="font-size:12px">${o.loc}</div></div>
+      ${o.obs?`<div style="grid-column:1/-1"><div style="font-size:10px;color:var(--g-hint);margin-bottom:3px">Observações</div><div style="font-size:12px">${o.obs}</div></div>`:''}
+      <div style="grid-column:1/-1;display:flex;gap:8px;margin-top:6px">
+        ${o.status!=='Concluído'?`<button class="btn btn-primary" style="font-size:11px;padding:5px 10px" onclick="event.stopPropagation();mudarStatusOS('${o.num}','Em andamento')">▶ Iniciar</button>`:''}
+        ${o.status==='Em andamento'?`<button class="btn" style="font-size:11px;padding:5px 10px;color:var(--g-success);border-color:var(--g-success)" onclick="event.stopPropagation();mudarStatusOS('${o.num}','Concluído')">✓ Concluir</button>`:''}
+        ${o.status==='Concluído'?`<span style="font-size:11px;color:var(--g-success);font-weight:600">✓ Concluída</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleOSRow(i){
+  const panel=document.getElementById('osd-'+i);
+  if(panel) panel.classList.toggle('open');
+}
+function mudarStatusOS(num, novoStatus){
+  const os=osList.find(o=>o.num===num);
+  if(!os) return;
+  const antigo=os.status;
+  os.status=novoStatus;
+  if(novoStatus==='Concluído'){
+    const a=ativos.find(x=>x.tag===os.tag);
+    if(a && a.status==='Em manutenção') a.status='Ativo';
+  }
+  renderOS(osTabAtual);
+  renderDashboard();
+  showToast('OS '+num+': '+antigo+' → '+novoStatus);
+}
+function filterOS(f,el){} // mantido para compatibilidade
 
 // ── RASTREAMENTO ──
 function renderRastr(){
