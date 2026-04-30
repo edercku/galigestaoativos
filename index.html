@@ -1036,13 +1036,19 @@ tr:hover td{background:var(--g-bg)}
         <label class="form-label">Nome do plano *</label>
         <input class="form-input" id="pl-nome" placeholder="ex: Revisão preventiva mensal — Câmera FLIR">
       </div>
-      <div class="form-group full" style="grid-column:1/-1">
-        <label class="form-label">Ativo (TAG) *</label>
+      <div class="form-group">
+        <label class="form-label">TAG (GA) *</label>
         <div style="display:flex;gap:6px">
           <input class="form-input" id="pl-tag" placeholder="ex: GA-000836" style="flex:1;font-family:monospace;font-weight:600;text-transform:uppercase" oninput="this.value=this.value.toUpperCase();plPreviewAtivo()">
-          <button class="btn" style="font-size:11px;padding:6px 10px" onclick="abrirScanModal('plano')">📷 Scan</button>
+          <button class="btn" style="font-size:11px;padding:6px 10px" onclick="abrirScanModal('plano')">📷</button>
         </div>
-        <div id="pl-ativo-preview" style="margin-top:4px;font-size:11px;color:var(--g-success)"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Código ERP (AF)</label>
+        <input class="form-input" id="pl-erp" placeholder="ex: AF-002596" style="font-family:monospace;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+      </div>
+      <div class="form-group full" style="grid-column:1/-1">
+        <div id="pl-ativo-preview" style="font-size:11px;color:var(--g-success);min-height:16px"></div>
       </div>
       <div class="form-group">
         <label class="form-label">Tipo de manutenção *</label>
@@ -1081,6 +1087,17 @@ tr:hover td{background:var(--g-bg)}
       <div class="form-group">
         <label class="form-label">Centro de custo</label>
         <input class="form-input" id="pl-cc" placeholder="ex: 212500" style="font-family:monospace">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Odômetro atual</label>
+        <div style="display:flex;gap:6px">
+          <input class="form-input" id="pl-odometro" placeholder="ex: 48200" type="number" min="0" style="flex:1">
+          <select class="form-select" id="pl-odometro-unidade" style="width:80px">
+            <option value="km">km</option>
+            <option value="h">horas</option>
+            <option value="ciclos">ciclos</option>
+          </select>
+        </div>
       </div>
       <div class="form-group full" style="grid-column:1/-1">
         <label class="form-label">Descrição / Checklist</label>
@@ -2580,8 +2597,10 @@ function renderPlanos(){
           <span style="font-size:10px;color:var(--g-hint)">${p.tipo}</span>
         </div>
         <div style="font-size:11px;color:var(--g-muted);margin-bottom:6px">
-          <span style="font-family:monospace;color:var(--g-orange)">${p.tag}</span>
+          <span style="font-family:monospace;color:var(--g-orange)">GA: ${p.tag}</span>
+          ${p.erp?` <span style="font-family:monospace;color:var(--g-purple)">AF: ${p.erp}</span>`:''}
           ${a?' — '+a.nome:''}
+          ${p.odometro?` · Hodôm: <strong style="color:var(--g-text)">${p.odometro} ${p.odometroUnidade||'km'}</strong>`:''}
           ${p.resp?' · Resp: '+p.resp:''}
           ${p.cc?' · CC: '+p.cc:''}
         </div>
@@ -2621,8 +2640,11 @@ function abrirModalPlano(id){
   document.getElementById('pl-period').value   = p?.period||'Mensal';
   document.getElementById('pl-dt-ultima').value= p?.dtUltima||new Date().toISOString().split('T')[0];
   document.getElementById('pl-antec').value    = p?.antec||'7';
+  document.getElementById('pl-erp').value      = p?.erp||'';
   document.getElementById('pl-resp').value     = p?.resp||'';
   document.getElementById('pl-cc').value       = p?.cc||'';
+  document.getElementById('pl-odometro').value = p?.odometro||'';
+  document.getElementById('pl-odometro-unidade').value = p?.odometroUnidade||'km';
   document.getElementById('pl-desc').value     = p?.desc||'';
   plPreviewAtivo();
   document.getElementById('plano-modal').style.display='flex';
@@ -2633,8 +2655,16 @@ function plPreviewAtivo(){
   const el=document.getElementById('pl-ativo-preview');
   if(!el) return;
   const a=ativos.find(x=>x.tag===tag);
-  el.textContent=a?'✓ '+a.nome+' — '+a.loc:'';
-  el.style.color=a?'var(--g-success)':'var(--g-danger)';
+  if(a){
+    el.textContent='✓ '+a.nome+' — '+a.loc+(a.depto?' / '+a.depto:'');
+    el.style.color='var(--g-success)';
+    // Auto-preenche AF se campo estiver vazio
+    const erp=document.getElementById('pl-erp');
+    if(erp && !erp.value && a.erp && a.erp!=='—') erp.value=a.erp;
+  } else {
+    el.textContent=tag?'TAG não encontrada':'';
+    el.style.color='var(--g-danger)';
+  }
 }
 function salvarPlano(){
   const nome  = document.getElementById('pl-nome').value.trim();
@@ -2646,14 +2676,19 @@ function salvarPlano(){
   if(!nome){ showToast('⚠ Informe o nome do plano'); return; }
   if(!tag){  showToast('⚠ Informe a TAG do ativo');  return; }
   if(!dtUlt){ showToast('⚠ Informe a data da última execução'); return; }
+  const erp   = document.getElementById('pl-erp').value.trim();
+  const odo   = document.getElementById('pl-odometro').value.trim();
+  const odoUn = document.getElementById('pl-odometro-unidade').value;
   if(editingPlanoId){
     const p=planosManutencao.find(x=>x.id===editingPlanoId);
-    if(p){ p.nome=nome;p.tag=tag;p.tipo=tipo;p.period=period;p.dtUltima=dtUlt;p.antec=antec;
+    if(p){ p.nome=nome;p.tag=tag;p.erp=erp;p.tipo=tipo;p.period=period;p.dtUltima=dtUlt;p.antec=antec;
+           p.odometro=odo;p.odometroUnidade=odoUn;
            p.resp=document.getElementById('pl-resp').value;
            p.cc=document.getElementById('pl-cc').value;
            p.desc=document.getElementById('pl-desc').value; }
   } else {
-    planosManutencao.push({id:nextPlanoId++,nome,tag,tipo,period,dtUltima:dtUlt,antec,
+    planosManutencao.push({id:nextPlanoId++,nome,tag,erp,tipo,period,dtUltima:dtUlt,antec,
+      odometro:odo,odometroUnidade:odoUn,
       resp:document.getElementById('pl-resp').value,
       cc:document.getElementById('pl-cc').value,
       desc:document.getElementById('pl-desc').value});
